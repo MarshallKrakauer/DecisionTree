@@ -10,7 +10,7 @@ df['y'] = data_bunch['target']
 
 class DecisionNode:
 
-    def __init__(self, dataframe, y_col='target', parent=None, depth=1, random_seed=0):
+    def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0):
         self.df = dataframe
         self.y_col = y_col
         self.depth = depth
@@ -43,7 +43,7 @@ class DecisionNode:
     def find_best_split(self):
         best_column = None  # column that provides best split
         best_split = None  # value which provides best split
-        best_gini_value = float('inf')
+        best_gini_value = float('inf')  # stores value for best split
 
         for col in self.select_columns():
             split_li = self.get_split_list(col)
@@ -79,6 +79,15 @@ class DecisionNode:
 
         self.children = [node_0, node_1]
 
+    def create_child_nodes(self):
+        best_column, best_split, _ = self.find_best_split()
+        self.make_split(best_column, best_split)
+
+class DecisionTree:
+
+    def __init__(self,root_node,max_depth=3):
+        self.root_node = root_node
+        self.max_depth = max_depth
 
 dn = DecisionNode(df, 'y')
 print(dn.find_best_split())
