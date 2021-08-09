@@ -85,9 +85,21 @@ class DecisionNode:
 
 class DecisionTree:
 
-    def __init__(self,root_node,max_depth=3):
+    def __init__(self,root_node,max_depth=3, min_sample_split=0):
         self.root_node = root_node
         self.max_depth = max_depth
+        self.min_sample_split = min_sample_split
+
+    def initiate_splitting(self):
+        self.split_data(self.root_node)
+
+    def split_data(self, node):
+        if node.depth < self.max_depth:
+            node.create_child_nodes()
+            for child in node.children:
+                self.split_data(child)
+
 
 dn = DecisionNode(df, 'y')
-print(dn.find_best_split())
+dt = DecisionTree(dn,3)
+dt.initiate_splitting()
