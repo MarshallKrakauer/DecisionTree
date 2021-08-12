@@ -27,7 +27,8 @@ class DecisionNode:
             gini_str = str(round(self.gini,3))
             split_str = str(round(self.best_split, 3))
             size_str = str(len(self.df))
-            return self.best_column + ' ' + split_str +  ' ' + gini_str + ' ' + size_str
+            depth_str = str(self.depth)
+            return self.best_column + ' ' + split_str +  ' ' + gini_str + ' ' + size_str + ' ' + depth_str
         else:
             return "terminal"
 
@@ -85,13 +86,13 @@ class DecisionNode:
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
-                              random_seed=self.random_seed+1)
+                              random_seed=random.randint(1,1000000))
 
         self.right_child = DecisionNode(dataframe= self.df[self.df[col] <= cutoff],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
-                              random_seed=self.random_seed+1)
+                              random_seed=random.randint(1,1000000))
 
     def create_child_nodes(self):
         best_column, best_split, _ = self.find_best_split()
@@ -108,17 +109,20 @@ class DecisionTree:
         self.split_data(self.root_node)
 
     def split_data(self, node):
-        if node.depth < self.max_depth:
+        if node.depth <= self.max_depth:
             node.create_child_nodes()
             self.split_data(node.left_child)
             self.split_data(node.right_child)
 
     def search_tree(self, first_node=None):
+
         if first_node is None:
             first_node = self.root_node
+
         if first_node.left_child is not None:
+            print(first_node.left_child)
+            print(first_node.right_child)
             self.search_tree(first_node.left_child)
-        if first_node.right_child is not None:
             self.search_tree(first_node.right_child)
 
 dn = DecisionNode(df,'y')
