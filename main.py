@@ -15,8 +15,21 @@ class DecisionNode:
         self.y_col = y_col
         self.depth = depth
         self.parent = parent
-        self.children = None
+        self.left_child = None
+        self.right_child = None
         self.random_seed = random_seed
+        self.gini = None
+        self.best_column = None
+        self.best_split = None
+
+    def __str__(self):
+        if self.gini is not None:
+            gini_str = str(round(self.gini,3))
+            split_str = str(round(self.best_split, 3))
+            size_str = str(len(self.df))
+            return self.best_column + ' ' + split_str +  ' ' + gini_str + ' ' + size_str
+        else:
+            return "terminal"
 
     def calculate_gini(self, column, threshold):
         gini = 0  # returning value
@@ -54,6 +67,9 @@ class DecisionNode:
                     best_column = col
                     best_split = split
 
+        self.gini = best_gini_value
+        self.best_column = best_column
+        self.best_split = best_split
         return best_column, best_split, best_gini_value
 
     def select_columns(self):
@@ -65,19 +81,17 @@ class DecisionNode:
         return col_list
 
     def make_split(self, col, cutoff):
-        node_0 = DecisionNode(dataframe= self.df[self.df[col] > cutoff],
+        self.left_child = DecisionNode(dataframe= self.df[self.df[col] > cutoff],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
-                              random_seed=self.random_seed)
+                              random_seed=self.random_seed+1)
 
-        node_1 = DecisionNode(dataframe= self.df[self.df[col] <= cutoff],
+        self.right_child = DecisionNode(dataframe= self.df[self.df[col] <= cutoff],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
-                              random_seed=self.random_seed)
-
-        self.children = [node_0, node_1]
+                              random_seed=self.random_seed+1)
 
     def create_child_nodes(self):
         best_column, best_split, _ = self.find_best_split()
@@ -96,10 +110,19 @@ class DecisionTree:
     def split_data(self, node):
         if node.depth < self.max_depth:
             node.create_child_nodes()
-            for child in node.children:
-                self.split_data(child)
+            self.split_data(node.left_child)
+            self.split_data(node.right_child)
 
+    def search_tree(self, first_node=None):
+        if first_node is None:
+            first_node = self.root_node
+        if first_node.left_child is not None:
+            self.search_tree(first_node.left_child)
+        if first_node.right_child is not None:
+            self.search_tree(first_node.right_child)
 
-dn = DecisionNode(df, 'y')
+dn = DecisionNode(df,'y')
 dt = DecisionTree(dn,3)
 dt.initiate_splitting()
+dt.search_tree()
+
