@@ -8,8 +8,35 @@ cols = [c.replace(' ', '_') for c in data_bunch['feature_names']]
 df = pd.DataFrame(data_bunch['data'], columns=cols)
 df['y'] = data_bunch['target']
 
-class DecisionNode:
+class DecisionTree:
+    """
+    Single node of decision tree that finds best split for a given dataframe.
 
+    Attributes
+    ----------
+    df : pandas DatFrame
+        Dataframe to split based on gini impurity
+    y_col : str
+        Name of column that contains 1/0 target variable
+    depth : int
+        Number of parents of current node
+    max_depth : int
+        Maximum layers of descendants for tree's root node
+    parent : DecisionTree
+        Parent of current node, split that lead to this node
+    random_seed : int
+        Random value used for tree
+    left_child : DecisionTree
+        Node based on best split
+    right_child : DecisionTree
+        Other node based on best split
+    gini : float
+        Gini value of the best possible split
+    best_column : string
+        Name of column from which data is split
+    best_split : float
+        Value from which the best column is split on
+    """
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0, max_depth=3):
         self.df = dataframe
         self.y_col = y_col
@@ -62,6 +89,7 @@ class DecisionNode:
         for split in [df_0, df_1]:
             temp_score = 0
             if len(split) > 0:
+
                 # Calculate probability score for each class
                 probability_0 = len(split[split[self.y_col] == 0]) / len(split)
                 probability_1 = len(split[split[self.y_col] == 1]) / len(split)
@@ -93,6 +121,8 @@ class DecisionNode:
         best_gini_value = float('inf')  # stores value for best split
 
         for col in self.select_columns():
+
+            # Get the list of splits for each column and find the best gini value
             split_li = self.get_split_list(col)
             for split in split_li:
                 current_gini_value = self.calculate_gini(col, split)
@@ -125,14 +155,14 @@ class DecisionNode:
         :param col: feature which tree will be split on
         :param cutoff: value from which to make split in tree
         """
-        self.left_child = DecisionNode(dataframe= self.df[self.df[col] > cutoff],
+        self.left_child = DecisionTree(dataframe= self.df[self.df[col] > cutoff],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
                               max_depth=self.max_depth,
                               random_seed=random.randint(1,1000000))
 
-        self.right_child = DecisionNode(dataframe= self.df[self.df[col] <= cutoff],
+        self.right_child = DecisionTree(dataframe= self.df[self.df[col] <= cutoff],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
@@ -181,6 +211,6 @@ def print_breadth_first(node):
     for i in range(0, node.max_depth+1):
         print_current_level(node,i)
 
-dn = DecisionNode(df,'y')
+dn = DecisionTree(df,'y')
 dn.create_tree()
 print_breadth_first(dn)
