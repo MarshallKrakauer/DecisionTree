@@ -37,11 +37,13 @@ class DecisionTree:
     best_split : float
         Value from which the best column is split on
     """
-    def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0, max_depth=3):
+    def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0, max_depth=3,
+                 min_sample_split=0):
         self.df = dataframe
         self.y_col = y_col
         self.depth = depth
         self.max_depth = max_depth
+        self.min_sample_split = min_sample_split
         self.parent = parent
         self.random_seed = random_seed
         self.left_child = None
@@ -49,6 +51,14 @@ class DecisionTree:
         self.gini = None
         self.best_column = None
         self.best_split = None
+        self.is_terminal =False
+
+        # Check to see if node is terminal
+        if self.depth > self.max_depth:
+            self.is_terminal = True
+
+        if len(self.df) // 2 < self.min_sample_split:
+            self.is_terminal = True
 
     def __str__(self):
         """
@@ -64,7 +74,9 @@ class DecisionTree:
             col_str = 'Feature: ' + self.best_column
             return col_str + ' ' + split_str +  ' ' + gini_str + ' ' + size_str + ' ' + depth_str
         else:
-            return "terminal"
+            size_str = 'Size: ' + str(len(self.df))
+            depth_str = 'Depth: ' + str(self.depth)
+            return size_str + ' ' + depth_str
 
     @property
     def children(self):
@@ -85,6 +97,8 @@ class DecisionTree:
         df_0 = self.df[self.df[column]  > threshold]
         df_1 = self.df[self.df[column] <= threshold]
 
+        if len(df_0) < self.min_sample_split or len(df_1) < self.min_sample_split:
+            return float('inf')
         # Calculate gini score for each dataframe
         for split in [df_0, df_1]:
             temp_score = 0
@@ -116,7 +130,6 @@ class DecisionTree:
         best_gini_value = float('inf')  # stores value for best split
 
         for col in self.select_columns():
-
             # Get the list of splits for each column and find the best gini value
             split_li = self.get_split_list(col)
             for split in split_li:
@@ -153,6 +166,7 @@ class DecisionTree:
                               parent=self,
                               depth=self.depth+1,
                               max_depth=self.max_depth,
+                              min_sample_split=self.min_sample_split,
                               random_seed=random.randint(1,1000000))
 
         self.right_child = DecisionTree(dataframe= self.df[self.df[self.best_column] <= self.best_split],
@@ -160,12 +174,12 @@ class DecisionTree:
                               parent=self,
                               depth=self.depth+1,
                               max_depth=self.max_depth,
+                              min_sample_split=self.min_sample_split,
                               random_seed=random.randint(1,1000000))
-
 
     def create_tree(self):
         """Creates decision tree from a root node"""
-        if self.depth <= self.max_depth:
+        if not self.is_terminal:
             self.make_split()
             self.left_child.create_tree()
             self.right_child.create_tree()
@@ -197,6 +211,6 @@ def print_breadth_first(node):
     for i in range(0, node.max_depth+1):
         print_current_level(node,i)
 
-dn = DecisionTree(df,'y')
+dn = DecisionTree(df,'y', min_sample_split=3)
 dn.create_tree()
 print_breadth_first(dn)
