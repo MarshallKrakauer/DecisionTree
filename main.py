@@ -10,38 +10,59 @@ df['y'] = data_bunch['target']
 
 class DecisionNode:
 
-    def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0):
+    def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0, max_depth=3):
         self.df = dataframe
         self.y_col = y_col
         self.depth = depth
+        self.max_depth = max_depth
         self.parent = parent
+        self.random_seed = random_seed
         self.left_child = None
         self.right_child = None
-        self.random_seed = random_seed
         self.gini = None
         self.best_column = None
         self.best_split = None
 
     def __str__(self):
+        """
+        Creates string value to represent node
+
+        :return str: String with information about node
+        """
         if self.gini is not None:
-            gini_str = str(round(self.gini,3))
-            split_str = str(round(self.best_split, 3))
-            size_str = str(len(self.df))
-            depth_str = str(self.depth)
-            return self.best_column + ' ' + split_str +  ' ' + gini_str + ' ' + size_str + ' ' + depth_str
+            gini_str = 'Gini: ' + str(round(self.gini,3))
+            split_str = 'Split: ' + str(round(self.best_split, 3))
+            size_str = 'Size: ' + str(len(self.df))
+            depth_str = 'Depth: ' + str(self.depth)
+            col_str = 'Feature: ' + self.best_column
+            return col_str + ' ' + split_str +  ' ' + gini_str + ' ' + size_str + ' ' + depth_str
         else:
             return "terminal"
 
+    @property
+    def children(self):
+        """List of node children"""
+        return [self.left_child, self.right_child]
+
     def calculate_gini(self, column, threshold):
+        """
+        Calculate the gini impurity for a given split at a given column
+
+        :param column: Column from which to make check split on
+        :param threshold: number at which to split
+        :return: gini score
+        """
         gini = 0  # returning value
 
         # Split into two dataframes
         df_0 = self.df[self.df[column]  > threshold]
         df_1 = self.df[self.df[column] <= threshold]
 
+        # Calculate gini score for each dataframe
         for split in [df_0, df_1]:
             temp_score = 0
             if len(split) > 0:
+                # Calculate probability score for each class
                 probability_0 = len(split[split[self.y_col] == 0]) / len(split)
                 probability_1 = len(split[split[self.y_col] == 1]) / len(split)
                 temp_score += (probability_0 * probability_0 + probability_1 * probability_1)
@@ -50,11 +71,23 @@ class DecisionNode:
         return gini
 
     def get_split_list(self, column):
-        value_li = self.df[column].values
-        value_li.sort()
-        return value_li
+        """
+        Get list of value from which to make split
+
+        :param li column: column in data frame
+        :return li: ordered list of unique values in dataframe
+        """
+        return list(set(self.df[column].values))
 
     def find_best_split(self):
+        """
+        For a given column, find the split with the lowest gini impurity
+
+        :return tuple:
+            best_column : column from which split is made
+            best_split : value at which to split the best_column
+            best_gini : gini value at given split
+        """
         best_column = None  # column that provides best split
         best_split = None  # value which provides best split
         best_gini_value = float('inf')  # stores value for best split
@@ -74,6 +107,10 @@ class DecisionNode:
         return best_column, best_split, best_gini_value
 
     def select_columns(self):
+        """Choose subset of columns of which to make splits
+
+        :return list: list of columns which to check for splits
+        """
         random.seed(self.random_seed)
         num_columns = floor(sqrt(len(self.df.columns)))
         features = [col for col in self.df.columns if col != self.y_col]
@@ -82,51 +119,68 @@ class DecisionNode:
         return col_list
 
     def make_split(self, col, cutoff):
+        """
+        Make the two child nodes based on the given split
+
+        :param col: feature which tree will be split on
+        :param cutoff: value from which to make split in tree
+        """
         self.left_child = DecisionNode(dataframe= self.df[self.df[col] > cutoff],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
+                              max_depth=self.max_depth,
                               random_seed=random.randint(1,1000000))
 
         self.right_child = DecisionNode(dataframe= self.df[self.df[col] <= cutoff],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
+                              max_depth=self.max_depth,
                               random_seed=random.randint(1,1000000))
 
     def create_child_nodes(self):
+        """Splits data and creates two child nodes.
+
+        May be unnecessary. Will consider refactor
+        """
         best_column, best_split, _ = self.find_best_split()
         self.make_split(best_column, best_split)
 
-class DecisionTree:
+    def create_tree(self):
+        """Creates decision tree from a root node"""
+        if self.depth <= self.max_depth:
+            self.create_child_nodes()
+            self.left_child.create_tree()
+            self.right_child.create_tree()
 
-    def __init__(self,root_node,max_depth=3, min_sample_split=0):
-        self.root_node = root_node
-        self.max_depth = max_depth
-        self.min_sample_split = min_sample_split
+def print_current_level(node, level):
+    """
+    Prints all nodes at the given level of the tree
 
-    def initiate_splitting(self):
-        self.split_data(self.root_node)
+    :param node: root node from which to check for values
+    :param level: depth of tree (starting at 0) from which to print
+    """
+    if level < 0:
+        raise ValueError("minimum depth is 0")
 
-    def split_data(self, node):
-        if node.depth <= self.max_depth:
-            node.create_child_nodes()
-            self.split_data(node.left_child)
-            self.split_data(node.right_child)
+    if node is None:
+        return
+    if level == 0:
+        print(node)
+    elif level > 0:
+        print_current_level(node.left_child, level-1)
+        print_current_level(node.right_child, level-1)
 
-    def search_tree(self, first_node=None):
+def print_breadth_first(node):
+    """
+    Print the nodes depth first (starting from 0 and going to the bottom).
 
-        if first_node is None:
-            first_node = self.root_node
-
-        if first_node.left_child is not None:
-            print(first_node.left_child)
-            print(first_node.right_child)
-            self.search_tree(first_node.left_child)
-            self.search_tree(first_node.right_child)
+    :param node: root_node of decision tree
+    """
+    for i in range(0, node.max_depth+1):
+        print_current_level(node,i)
 
 dn = DecisionNode(df,'y')
-dt = DecisionTree(dn,3)
-dt.initiate_splitting()
-dt.search_tree()
-
+dn.create_tree()
+print_breadth_first(dn)
