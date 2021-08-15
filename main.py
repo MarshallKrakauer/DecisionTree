@@ -110,11 +110,6 @@ class DecisionTree:
     def find_best_split(self):
         """
         For a given column, find the split with the lowest gini impurity
-
-        :return tuple:
-            best_column : column from which split is made
-            best_split : value at which to split the best_column
-            best_gini : gini value at given split
         """
         best_column = None  # column that provides best split
         best_split = None  # value which provides best split
@@ -134,7 +129,6 @@ class DecisionTree:
         self.gini = best_gini_value
         self.best_column = best_column
         self.best_split = best_split
-        return best_column, best_split, best_gini_value
 
     def select_columns(self):
         """Choose subset of columns of which to make splits
@@ -148,39 +142,31 @@ class DecisionTree:
         col_list = random.sample(features,num_columns)
         return col_list
 
-    def make_split(self, col, cutoff):
+    def make_split(self):
         """
         Make the two child nodes based on the given split
-
-        :param col: feature which tree will be split on
-        :param cutoff: value from which to make split in tree
         """
-        self.left_child = DecisionTree(dataframe= self.df[self.df[col] > cutoff],
+
+        self.find_best_split()
+        self.left_child = DecisionTree(dataframe= self.df[self.df[self.best_column] > self.best_split],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
                               max_depth=self.max_depth,
                               random_seed=random.randint(1,1000000))
 
-        self.right_child = DecisionTree(dataframe= self.df[self.df[col] <= cutoff],
+        self.right_child = DecisionTree(dataframe= self.df[self.df[self.best_column] <= self.best_split],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
                               max_depth=self.max_depth,
                               random_seed=random.randint(1,1000000))
 
-    def create_child_nodes(self):
-        """Splits data and creates two child nodes.
-
-        May be unnecessary. Will consider refactor
-        """
-        best_column, best_split, _ = self.find_best_split()
-        self.make_split(best_column, best_split)
 
     def create_tree(self):
         """Creates decision tree from a root node"""
         if self.depth <= self.max_depth:
-            self.create_child_nodes()
+            self.make_split()
             self.left_child.create_tree()
             self.right_child.create_tree()
 
