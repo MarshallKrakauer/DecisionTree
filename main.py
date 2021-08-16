@@ -87,6 +87,10 @@ class DecisionTree:
         """List of node children"""
         return [self.left_child, self.right_child]
 
+    @property
+    def probability(self):
+        return self.df[self.y_col].mean()
+
     def calculate_gini(self, column, threshold):
         """
         Calculate the gini impurity for a given split at a given column
@@ -143,6 +147,11 @@ class DecisionTree:
                     best_column = col
                     best_split = split
 
+        if self.parent is not None:
+            parent_gini = self.parent.gini
+        else:
+            parent_gini = float('inf')
+        print(best_gini_value - parent_gini)
         self.gini = best_gini_value
         self.best_column = best_column
         self.best_split = best_split
