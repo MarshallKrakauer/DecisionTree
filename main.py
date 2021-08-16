@@ -37,7 +37,7 @@ class DecisionTree:
     best_split : float
         Value from which the best column is split on
     """
-    def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0, max_depth=3,
+    def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
                  min_sample_split=0):
         self.df = dataframe
         self.y_col = y_col
@@ -171,15 +171,14 @@ class DecisionTree:
                               depth=self.depth+1,
                               max_depth=self.max_depth,
                               min_sample_split=self.min_sample_split,
-                              random_seed=random.randint(1,1000000))
-
+                              random_seed=random.random())
         self.right_child = DecisionTree(dataframe= self.df[self.df[self.best_column] <= self.best_split],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
                               max_depth=self.max_depth,
                               min_sample_split=self.min_sample_split,
-                              random_seed=random.randint(1,1000000))
+                              random_seed=random.random())
 
     def create_tree(self):
         """Creates decision tree from a root node"""
@@ -215,6 +214,6 @@ def print_breadth_first(node):
     for i in range(0, node.max_depth+1):
         print_current_level(node,i)
 
-dn = DecisionTree(df,'y', min_sample_split=5)
+dn = DecisionTree(df,'y',max_depth=4, min_sample_split=5)
 dn.create_tree()
 print_breadth_first(dn)
