@@ -51,13 +51,13 @@ class DecisionTree:
         self.gini = None
         self.best_column = None
         self.best_split = None
-        self.is_terminal =False
+        self.is_terminal = False
 
         # Check to see if node is terminal
-        if self.depth > self.max_depth:
+        if self.depth == self.max_depth:
             self.is_terminal = True
 
-        if len(self.df) // 2 < self.min_sample_split:
+        if len(self.df) < self.min_sample_split:
             self.is_terminal = True
 
     def __str__(self):
@@ -66,17 +66,21 @@ class DecisionTree:
 
         :return str: String with information about node
         """
+        depth_str = 'Depth: ' + str(self.depth)
+
+        if self.is_terminal:
+            terminal_str = 'Leaf, '
+        else:
+            terminal_str = 'Int, '
         if self.gini is not None:
             gini_str = 'Gini: ' + str(round(self.gini,3))
-            split_str = 'Split: ' + str(round(self.best_split, 3))
+            split_str = ' at ' + str(round(self.best_split, 3))
             size_str = 'Size: ' + str(len(self.df))
-            depth_str = 'Depth: ' + str(self.depth)
             col_str = 'Feature: ' + self.best_column
-            return col_str + ' ' + split_str +  ' ' + gini_str + ' ' + size_str + ' ' + depth_str
+            return terminal_str + size_str + ' ' + depth_str + ' ' +  gini_str + ' ' + col_str +  split_str
         else:
             size_str = 'Size: ' + str(len(self.df))
-            depth_str = 'Depth: ' + str(self.depth)
-            return size_str + ' ' + depth_str
+            return terminal_str + size_str + ' ' + depth_str
 
     @property
     def children(self):
@@ -134,7 +138,7 @@ class DecisionTree:
             split_li = self.get_split_list(col)
             for split in split_li:
                 current_gini_value = self.calculate_gini(col, split)
-                if current_gini_value < best_gini_value:
+                if current_gini_value <= best_gini_value:
                     best_gini_value = current_gini_value
                     best_column = col
                     best_split = split
@@ -161,7 +165,7 @@ class DecisionTree:
         """
 
         self.find_best_split()
-        self.left_child = DecisionTree(dataframe= self.df[self.df[self.best_column] > self.best_split],
+        self.left_child = DecisionTree(dataframe=self.df[self.df[self.best_column] > self.best_split],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
@@ -211,6 +215,6 @@ def print_breadth_first(node):
     for i in range(0, node.max_depth+1):
         print_current_level(node,i)
 
-dn = DecisionTree(df,'y', min_sample_split=3)
+dn = DecisionTree(df,'y', min_sample_split=5)
 dn.create_tree()
 print_breadth_first(dn)
