@@ -68,10 +68,13 @@ class DecisionTree:
         """
         depth_str = 'Depth: ' + str(self.depth)
 
+        # Internal or leaf node
         if self.is_terminal:
             terminal_str = 'Leaf, '
         else:
             terminal_str = 'Int, '
+
+        # Different outputs for internal or leaf node
         if self.gini is not None:
             gini_str = 'Gini: ' + str(round(self.gini,3))
             split_str = ' at ' + str(round(self.best_split, 3))
@@ -80,7 +83,8 @@ class DecisionTree:
             return terminal_str + size_str + ' ' + depth_str + ' ' +  gini_str + ' ' + col_str +  split_str
         else:
             size_str = 'Size: ' + str(len(self.df))
-            return terminal_str + size_str + ' ' + depth_str
+            prob_str = 'Prob: ' + str(round(self.probability,3))
+            return terminal_str + size_str + ' ' + depth_str + ' ' + prob_str
 
     @property
     def children(self):
@@ -147,11 +151,14 @@ class DecisionTree:
                     best_column = col
                     best_split = split
 
+        # todo Add a min impurity gain
         if self.parent is not None:
             parent_gini = self.parent.gini
         else:
             parent_gini = float('inf')
-        print(best_gini_value - parent_gini)
+
+        gini_gain = best_gini_value - parent_gini
+
         self.gini = best_gini_value
         self.best_column = best_column
         self.best_split = best_split
