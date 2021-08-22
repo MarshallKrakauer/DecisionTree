@@ -213,9 +213,18 @@ class DecisionTree:
         """Creates decision tree from a root node"""
         self.make_split()
         if not self.is_terminal:
-            # self.make_split()
             self.left_child.create_tree()
             self.right_child.create_tree()
+
+    def predict_proba(self, data_row):
+        if self.is_terminal:
+            return self.probability
+        else:
+            value = data_row[self.best_column]
+            if value > self.best_split:
+                return self.left_child.predict_proba(data_row)
+            else:
+                return self.right_child.predict_proba(data_row)
 
 def print_current_level(node, level):
     """
@@ -245,8 +254,8 @@ def print_breadth_first(node):
         print_current_level(node,i)
 
 if __name__ == '__main__':
-    # print(individual_val)
-    # isinstance(df, pd.DataFrame)
     dn = DecisionTree(df,'y',max_depth=4, min_sample_split=5, min_impurity_decrease=0)
     dn.create_tree()
-    print_breadth_first(dn)
+    #print_breadth_first(dn)
+    probability = dn.predict_proba(individual_val)
+    print(probability)
