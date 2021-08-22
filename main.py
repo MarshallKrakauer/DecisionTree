@@ -8,6 +8,8 @@ cols = [c.replace(' ', '_') for c in data_bunch['feature_names']]
 df = pd.DataFrame(data_bunch['data'], columns=cols)
 df['y'] = data_bunch['target']
 
+individual_val = df.loc[0, df.columns != 'y']
+
 class DecisionTree:
     """
     Single node of decision tree that finds best split for a given dataframe.
@@ -38,12 +40,13 @@ class DecisionTree:
         Value from which the best column is split on
     """
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
-                 min_sample_split=0):
+                 min_sample_split=0, min_impurity_decrease=float('-inf')):
         self.df = dataframe
         self.y_col = y_col
         self.depth = depth
         self.max_depth = max_depth
         self.min_sample_split = min_sample_split
+        self.min_impurity_decrease = min_impurity_decrease
         self.parent = parent
         self.random_seed = random_seed
         self.left_child = None
@@ -139,7 +142,7 @@ class DecisionTree:
         """
         best_column = None  # column that provides best split
         best_split = None  # value which provides best split
-        best_gini_value = float('inf')  # stores value for best split
+        best_gini_value = float('inf') # stores value for best split
 
         for col in self.select_columns():
             # Get the list of splits for each column and find the best gini value
@@ -157,11 +160,14 @@ class DecisionTree:
         else:
             parent_gini = float('inf')
 
-        gini_gain = best_gini_value - parent_gini
+        impurity_decrease = parent_gini - best_gini_value
 
-        self.gini = best_gini_value
-        self.best_column = best_column
-        self.best_split = best_split
+        if impurity_decrease > self.min_impurity_decrease:
+            self.gini = best_gini_value
+            self.best_column = best_column
+            self.best_split = best_split
+        else:
+            self.is_terminal = True
 
     def select_columns(self):
         """Choose subset of columns of which to make splits
@@ -181,12 +187,18 @@ class DecisionTree:
         """
 
         self.find_best_split()
+
+        # If node is terminal, no split is made
+        if self.is_terminal:
+            return
+
         self.left_child = DecisionTree(dataframe=self.df[self.df[self.best_column] > self.best_split],
                               y_col=self.y_col,
                               parent=self,
                               depth=self.depth+1,
                               max_depth=self.max_depth,
                               min_sample_split=self.min_sample_split,
+                              min_impurity_decrease=self.min_impurity_decrease,
                               random_seed=random.random())
         self.right_child = DecisionTree(dataframe= self.df[self.df[self.best_column] <= self.best_split],
                               y_col=self.y_col,
@@ -194,12 +206,14 @@ class DecisionTree:
                               depth=self.depth+1,
                               max_depth=self.max_depth,
                               min_sample_split=self.min_sample_split,
+                              min_impurity_decrease=self.min_impurity_decrease,
                               random_seed=random.random())
 
     def create_tree(self):
         """Creates decision tree from a root node"""
+        self.make_split()
         if not self.is_terminal:
-            self.make_split()
+            # self.make_split()
             self.left_child.create_tree()
             self.right_child.create_tree()
 
@@ -230,6 +244,9 @@ def print_breadth_first(node):
     for i in range(0, node.max_depth+1):
         print_current_level(node,i)
 
-dn = DecisionTree(df,'y',max_depth=4, min_sample_split=5)
-dn.create_tree()
-print_breadth_first(dn)
+if __name__ == '__main__':
+    # print(individual_val)
+    # isinstance(df, pd.DataFrame)
+    dn = DecisionTree(df,'y',max_depth=4, min_sample_split=5, min_impurity_decrease=0)
+    dn.create_tree()
+    print_breadth_first(dn)
