@@ -226,6 +226,14 @@ class DecisionTree:
             else:
                 return self.right_child.predict_proba(data_row)
 
+    def predict(self, data_row, cutoff=0.5):
+        prediction = self.predict_proba(data_row)
+
+        if prediction < cutoff:
+            return 0
+        else:
+            return 1
+
 def print_current_level(node, level):
     """
     Prints all nodes at the given level of the tree
@@ -257,5 +265,6 @@ if __name__ == '__main__':
     dn = DecisionTree(df,'y',max_depth=4, min_sample_split=5, min_impurity_decrease=0)
     dn.create_tree()
     #print_breadth_first(dn)
-    probability = dn.predict_proba(individual_val)
-    print(probability)
+    probability_0_ = dn.predict_proba(individual_val)
+    probability_1_ = dn.predict(individual_val)
+    print(probability_0_, probability_1_)
