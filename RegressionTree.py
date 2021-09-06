@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.datasets import load_diabetes
 from sklearn.metrics import mean_squared_error
 
-from DecisionTreeVirtual import print_breadth_first, DecisionTree
+from AbstractDecisionTree import print_breadth_first, DecisionTree
 
 data_bunch = load_diabetes()
 cols = [c.replace(' ', '_') for c in data_bunch['feature_names']]

@@ -7,7 +7,7 @@ import pandas as pd
 from math import sqrt, floor
 import random
 from sklearn.datasets import load_breast_cancer
-from DecisionTreeVirtual import print_breadth_first, DecisionTree
+from AbstractDecisionTree import print_breadth_first, DecisionTree
 
 data_bunch = load_breast_cancer()
 cols = [c.replace(' ', '_') for c in data_bunch['feature_names']]
