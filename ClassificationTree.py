@@ -1,4 +1,7 @@
-"""Classification Tree. Fits on a pandas Dataframe and can predict a single row of data"""
+"""Classification Tree. Fits on a pandas Dataframe and can predict a single row of data.
+
+Currently, Regression Tree inherits from this class. However, in the future, I will create a general
+Decision Tree virtual function that both will inherit from"""
 
 import pandas as pd
 from math import sqrt, floor
