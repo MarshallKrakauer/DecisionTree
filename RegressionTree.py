@@ -1,12 +1,12 @@
 """Regression Tree. Currently testing, but it can produce predictions. Inherits from ClassificationTree"""
 
+import random
+
 import pandas as pd
 from sklearn.datasets import load_diabetes
 from sklearn.metrics import mean_squared_error
-from HelperFunctions import print_breadth_first
-import random
 
-from ClassificationTree import ClassificationTree
+from DecisionTreeVirtual import print_breadth_first, DecisionTree
 
 data_bunch = load_diabetes()
 cols = [c.replace(' ', '_') for c in data_bunch['feature_names']]
@@ -16,7 +16,7 @@ df['y'] = data_bunch['target']
 individual_val = df.loc[0, df.columns != 'y']
 
 
-class RegressionTree(ClassificationTree):
+class RegressionTree(DecisionTree):
 
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
                  min_sample_split=0, min_impurity_decrease=float('-inf')):
@@ -47,7 +47,7 @@ class RegressionTree(ClassificationTree):
             return terminal_str + size_str + ' ' + depth_str + ' ' +  gini_str + ' ' + col_str +  split_str
         else:
             size_str = 'Size: ' + str(len(self.df))
-            prob_str = 'Prob: ' + str(round(self.probability,3))
+            prob_str = 'Prob: ' + str(round(self.target_mean,3))
             return terminal_str + size_str + ' ' + depth_str + ' ' + prob_str
 
     def calculate_split_criterion(self, column, threshold):
@@ -90,10 +90,10 @@ class RegressionTree(ClassificationTree):
         return self.df[self.y_col].mean()
 
     def probability(self):
-        raise AttributeError("'RegressionTree' object has no attribute 'probability'")
+        raise NotImplementedError("'RegressionTree' object has no attribute 'probability'")
 
     def predict_proba(self):
-        raise AttributeError("'RegressionTree' object has no attribute 'predict_proba'")
+        raise NotImplementedError("'RegressionTree' object has no attribute 'predict_proba'")
 
     def predict(self, data_row):
         if self.is_terminal:

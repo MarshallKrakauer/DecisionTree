@@ -7,7 +7,7 @@ import pandas as pd
 from math import sqrt, floor
 import random
 from sklearn.datasets import load_breast_cancer
-from HelperFunctions import print_breadth_first
+from DecisionTreeVirtual import print_breadth_first, DecisionTree
 
 data_bunch = load_breast_cancer()
 cols = [c.replace(' ', '_') for c in data_bunch['feature_names']]
@@ -16,58 +16,12 @@ df['y'] = data_bunch['target']
 
 individual_val = df.loc[0, df.columns != 'y']
 
-class ClassificationTree:
-    """
-    Single node of decision tree that finds best split for a given dataframe.
-
-    Attributes
-    ----------
-    df : pandas DatFrame
-        Dataframe to split based on gini impurity
-    y_col : str
-        Name of column that contains 1/0 target variable
-    depth : int
-        Number of parents of current node
-    max_depth : int
-        Maximum layers of descendants for tree's root node
-    parent : ClassificationTree
-        Parent of current node, split that lead to this node
-    random_seed : int
-        Random value used for tree
-    left_child : ClassificationTree
-        Node based on best split
-    right_child : ClassificationTree
-        Other node based on best split
-    split_criterion : float
-        Gini value of the best possible split
-    best_column : string
-        Name of column from which data is split
-    best_split : float
-        Value from which the best column is split on
-    """
+class ClassificationTree(DecisionTree):
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
                  min_sample_split=0, min_impurity_decrease=float('-inf')):
-        self.df = dataframe
-        self.y_col = y_col
-        self.depth = depth
-        self.max_depth = max_depth
-        self.min_sample_split = min_sample_split
-        self.min_impurity_decrease = min_impurity_decrease
-        self.parent = parent
-        self.random_seed = random_seed
-        self.left_child = None
-        self.right_child = None
-        self.split_criterion = None
-        self.best_column = None
-        self.best_split = None
-        self.is_terminal = False
 
-        # Check to see if node is terminal
-        if self.depth == self.max_depth:
-            self.is_terminal = True
-
-        if len(self.df) < self.min_sample_split:
-            self.is_terminal = True
+        super().__init__(dataframe, y_col, parent, depth, random_seed, max_depth,
+                     min_sample_split, min_impurity_decrease)
 
     def __str__(self):
         """
@@ -94,11 +48,6 @@ class ClassificationTree:
             size_str = 'Size: ' + str(len(self.df))
             prob_str = 'Prob: ' + str(round(self.probability,3))
             return terminal_str + size_str + ' ' + depth_str + ' ' + prob_str
-
-    @property
-    def children(self):
-        """List of node children"""
-        return [self.left_child, self.right_child]
 
     @property
     def probability(self):
@@ -134,48 +83,6 @@ class ClassificationTree:
             gini += (1 - temp_score) * (len(split) / len(self.df))
 
         return gini
-
-    def get_split_list(self, column):
-        """
-        Get list of value from which to make split
-
-        :param li column: column in data frame
-        :return li: ordered list of unique values in dataframe
-        """
-        return list(set(self.df[column].values))
-
-    def find_best_split(self):
-        """
-        For a given column, find the split with the lowest gini impurity
-        """
-        best_column = None  # column that provides best split
-        best_split = None  # value which provides best split
-        best_gini_value = float('inf') # stores value for best split
-
-        for col in self.select_columns():
-            # Get the list of splits for each column and find the best gini value
-            split_li = self.get_split_list(col)
-            for split in split_li:
-                current_gini_value = self.calculate_split_criterion(col, split)
-                if current_gini_value <= best_gini_value:
-                    best_gini_value = current_gini_value
-                    best_column = col
-                    best_split = split
-
-        # todo Add a min impurity gain
-        if self.parent is not None:
-            parent_gini = self.parent.split_criterion
-        else:
-            parent_gini = float('inf')
-
-        impurity_decrease = parent_gini - best_gini_value
-
-        if impurity_decrease > self.min_impurity_decrease:
-            self.split_criterion = best_gini_value
-            self.best_column = best_column
-            self.best_split = best_split
-        else:
-            self.is_terminal = True
 
     def select_columns(self):
         """Choose subset of columns of which to make splits
