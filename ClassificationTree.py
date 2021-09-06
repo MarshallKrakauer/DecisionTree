@@ -1,7 +1,10 @@
+"""Classification Tree. Fits on a pandas Dataframe and can predict a single row of data"""
+
 import pandas as pd
 from math import sqrt, floor
 import random
 from sklearn.datasets import load_breast_cancer
+from HelperFunctions import print_breadth_first
 
 data_bunch = load_breast_cancer()
 cols = [c.replace(' ', '_') for c in data_bunch['feature_names']]
@@ -10,7 +13,7 @@ df['y'] = data_bunch['target']
 
 individual_val = df.loc[0, df.columns != 'y']
 
-class DecisionTree:
+class ClassificationTree:
     """
     Single node of decision tree that finds best split for a given dataframe.
 
@@ -24,15 +27,15 @@ class DecisionTree:
         Number of parents of current node
     max_depth : int
         Maximum layers of descendants for tree's root node
-    parent : DecisionTree
+    parent : ClassificationTree
         Parent of current node, split that lead to this node
     random_seed : int
         Random value used for tree
-    left_child : DecisionTree
+    left_child : ClassificationTree
         Node based on best split
-    right_child : DecisionTree
+    right_child : ClassificationTree
         Other node based on best split
-    gini : float
+    split_criterion : float
         Gini value of the best possible split
     best_column : string
         Name of column from which data is split
@@ -51,7 +54,7 @@ class DecisionTree:
         self.random_seed = random_seed
         self.left_child = None
         self.right_child = None
-        self.gini = None
+        self.split_criterion = None
         self.best_column = None
         self.best_split = None
         self.is_terminal = False
@@ -78,8 +81,8 @@ class DecisionTree:
             terminal_str = 'Int, '
 
         # Different outputs for internal or leaf node
-        if self.gini is not None:
-            gini_str = 'Gini: ' + str(round(self.gini,3))
+        if self.split_criterion is not None:
+            gini_str = 'Gini: ' + str(round(self.split_criterion, 3))
             split_str = ' at ' + str(round(self.best_split, 3))
             size_str = 'Size: ' + str(len(self.df))
             col_str = 'Feature: ' + self.best_column
@@ -98,7 +101,7 @@ class DecisionTree:
     def probability(self):
         return self.df[self.y_col].mean()
 
-    def calculate_gini(self, column, threshold):
+    def calculate_split_criterion(self, column, threshold):
         """
         Calculate the gini impurity for a given split at a given column
 
@@ -110,9 +113,11 @@ class DecisionTree:
 
         # Split into two dataframes
         df_0 = self.df[self.df[column]  > threshold]
+        len_0 = len(df_0)
         df_1 = self.df[self.df[column] <= threshold]
+        len_1 = len(df_1)
 
-        if len(df_0) < self.min_sample_split or len(df_1) < self.min_sample_split:
+        if len_0 < self.min_sample_split or len_1 < self.min_sample_split:
             return float('inf')
         # Calculate gini score for each dataframe
         for split in [df_0, df_1]:
@@ -148,7 +153,7 @@ class DecisionTree:
             # Get the list of splits for each column and find the best gini value
             split_li = self.get_split_list(col)
             for split in split_li:
-                current_gini_value = self.calculate_gini(col, split)
+                current_gini_value = self.calculate_split_criterion(col, split)
                 if current_gini_value <= best_gini_value:
                     best_gini_value = current_gini_value
                     best_column = col
@@ -156,14 +161,14 @@ class DecisionTree:
 
         # todo Add a min impurity gain
         if self.parent is not None:
-            parent_gini = self.parent.gini
+            parent_gini = self.parent.split_criterion
         else:
             parent_gini = float('inf')
 
         impurity_decrease = parent_gini - best_gini_value
 
         if impurity_decrease > self.min_impurity_decrease:
-            self.gini = best_gini_value
+            self.split_criterion = best_gini_value
             self.best_column = best_column
             self.best_split = best_split
         else:
@@ -192,22 +197,22 @@ class DecisionTree:
         if self.is_terminal:
             return
 
-        self.left_child = DecisionTree(dataframe=self.df[self.df[self.best_column] > self.best_split],
-                              y_col=self.y_col,
-                              parent=self,
-                              depth=self.depth+1,
-                              max_depth=self.max_depth,
-                              min_sample_split=self.min_sample_split,
-                              min_impurity_decrease=self.min_impurity_decrease,
-                              random_seed=random.random())
-        self.right_child = DecisionTree(dataframe= self.df[self.df[self.best_column] <= self.best_split],
-                              y_col=self.y_col,
-                              parent=self,
-                              depth=self.depth+1,
-                              max_depth=self.max_depth,
-                              min_sample_split=self.min_sample_split,
-                              min_impurity_decrease=self.min_impurity_decrease,
-                              random_seed=random.random())
+        self.left_child = ClassificationTree(dataframe=self.df[self.df[self.best_column] > self.best_split],
+                                             y_col=self.y_col,
+                                             parent=self,
+                                             depth=self.depth+1,
+                                             max_depth=self.max_depth,
+                                             min_sample_split=self.min_sample_split,
+                                             min_impurity_decrease=self.min_impurity_decrease,
+                                             random_seed=random.random())
+        self.right_child = ClassificationTree(dataframe= self.df[self.df[self.best_column] <= self.best_split],
+                                              y_col=self.y_col,
+                                              parent=self,
+                                              depth=self.depth+1,
+                                              max_depth=self.max_depth,
+                                              min_sample_split=self.min_sample_split,
+                                              min_impurity_decrease=self.min_impurity_decrease,
+                                              random_seed=random.random())
 
     def create_tree(self):
         """Creates decision tree from a root node"""
@@ -234,37 +239,10 @@ class DecisionTree:
         else:
             return 1
 
-def print_current_level(node, level):
-    """
-    Prints all nodes at the given level of the tree
-
-    :param node: root node from which to check for values
-    :param level: depth of tree (starting at 0) from which to print
-    """
-    if level < 0:
-        raise ValueError("minimum depth is 0")
-
-    if node is None:
-        return
-    if level == 0:
-        print(node)
-    elif level > 0:
-        print_current_level(node.left_child, level-1)
-        print_current_level(node.right_child, level-1)
-
-def print_breadth_first(node):
-    """
-    Print the nodes depth first (starting from 0 and going to the bottom).
-
-    :param node: root_node of decision tree
-    """
-    for i in range(0, node.max_depth+1):
-        print_current_level(node,i)
-
 if __name__ == '__main__':
-    dn = DecisionTree(df,'y',max_depth=4, min_sample_split=5, min_impurity_decrease=0)
+    dn = ClassificationTree(df, 'y', max_depth=4, min_sample_split=5, min_impurity_decrease=0)
     dn.create_tree()
-    #print_breadth_first(dn)
+    print_breadth_first(dn)
     probability_0_ = dn.predict_proba(individual_val)
     probability_1_ = dn.predict(individual_val)
     print(probability_0_, probability_1_)
