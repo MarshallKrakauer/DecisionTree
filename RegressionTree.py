@@ -1,19 +1,8 @@
 """Regression Tree. Currently testing, but it can produce predictions. Inherits from ClassificationTree"""
 
 import random
-
-import pandas as pd
-from sklearn.datasets import load_diabetes
 from sklearn.metrics import mean_squared_error
-
-from AbstractDecisionTree import print_breadth_first, DecisionTree
-
-data_bunch = load_diabetes()
-cols = [c.replace(' ', '_') for c in data_bunch['feature_names']]
-df = pd.DataFrame(data_bunch['data'], columns=cols)
-df['y'] = data_bunch['target']
-
-individual_val = df.loc[0, df.columns != 'y']
+from AbstractDecisionTree import print_breadth_first, DecisionTree, get_dataframe
 
 
 class RegressionTree(DecisionTree):
@@ -22,7 +11,7 @@ class RegressionTree(DecisionTree):
                  min_sample_split=0, min_impurity_decrease=float('-inf')):
 
         super().__init__(dataframe, y_col, parent, depth, random_seed, max_depth,
-                     min_sample_split, min_impurity_decrease)
+                         min_sample_split, min_impurity_decrease)
 
     def __str__(self):
         """
@@ -44,10 +33,10 @@ class RegressionTree(DecisionTree):
             split_str = ' at ' + str(round(self.best_split, 3))
             size_str = 'Size: ' + str(len(self.df))
             col_str = 'Feature: ' + self.best_column
-            return terminal_str + size_str + ' ' + depth_str + ' ' +  gini_str + ' ' + col_str +  split_str
+            return terminal_str + size_str + ' ' + depth_str + ' ' + gini_str + ' ' + col_str + split_str
         else:
             size_str = 'Size: ' + str(len(self.df))
-            prob_str = 'Prob: ' + str(round(self.target_mean,3))
+            prob_str = 'Prob: ' + str(round(self.target_mean, 3))
             return terminal_str + size_str + ' ' + depth_str + ' ' + prob_str
 
     def calculate_split_criterion(self, column, threshold):
@@ -117,26 +106,28 @@ class RegressionTree(DecisionTree):
             return
 
         self.left_child = RegressionTree(dataframe=self.df[self.df[self.best_column] > self.best_split],
-                                             y_col=self.y_col,
-                                             parent=self,
-                                             depth=self.depth+1,
-                                             max_depth=self.max_depth,
-                                             min_sample_split=self.min_sample_split,
-                                             min_impurity_decrease=self.min_impurity_decrease,
-                                             random_seed=random.random())
+                                         y_col=self.y_col,
+                                         parent=self,
+                                         depth=self.depth + 1,
+                                         max_depth=self.max_depth,
+                                         min_sample_split=self.min_sample_split,
+                                         min_impurity_decrease=self.min_impurity_decrease,
+                                         random_seed=random.random())
 
-        self.right_child = RegressionTree(dataframe= self.df[self.df[self.best_column] <= self.best_split],
-                                              y_col=self.y_col,
-                                              parent=self,
-                                              depth=self.depth+1,
-                                              max_depth=self.max_depth,
-                                              min_sample_split=self.min_sample_split,
-                                              min_impurity_decrease=self.min_impurity_decrease,
-                                              random_seed=random.random())
+        self.right_child = RegressionTree(dataframe=self.df[self.df[self.best_column] <= self.best_split],
+                                          y_col=self.y_col,
+                                          parent=self,
+                                          depth=self.depth + 1,
+                                          max_depth=self.max_depth,
+                                          min_sample_split=self.min_sample_split,
+                                          min_impurity_decrease=self.min_impurity_decrease,
+                                          random_seed=random.random())
+
 
 if __name__ == '__main__':
-    dn = RegressionTree(df,'y')
+    df, individual_val, true_value = get_dataframe(False)
+    dn = RegressionTree(df, 'y')
     dn.create_tree()
     print_breadth_first(dn)
     pred_1 = dn.predict(individual_val)
-    print(pred_1)
+    print(pred_1, true_value)

@@ -3,19 +3,9 @@
 Currently, Regression Tree inherits from this class. However, in the future, I will create a general
 Decision Tree virtual function that both will inherit from"""
 
-import pandas as pd
 from math import sqrt, floor
 import random
-from sklearn.datasets import load_breast_cancer
-from AbstractDecisionTree import print_breadth_first, DecisionTree
-
-data_bunch = load_breast_cancer()
-cols = [c.replace(' ', '_') for c in data_bunch['feature_names']]
-df = pd.DataFrame(data_bunch['data'], columns=cols)
-df['y'] = data_bunch['target']
-
-individual_val = df.loc[0, df.columns != 'y']
-true_value = df.loc[0, 'y']
+from AbstractDecisionTree import print_breadth_first, DecisionTree, get_dataframe
 
 class ClassificationTree(DecisionTree):
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
@@ -152,6 +142,7 @@ class ClassificationTree(DecisionTree):
             return 1
 
 if __name__ == '__main__':
+    df, individual_val, true_value = get_dataframe(True)
     dn = ClassificationTree(df, 'y', max_depth=4, min_sample_split=5, min_impurity_decrease=0)
     dn.create_tree()
     print_breadth_first(dn)

@@ -1,6 +1,6 @@
-from ClassificationTree import ClassificationTree, df, individual_val, true_value
+from ClassificationTree import ClassificationTree
 from RegressionTree import RegressionTree
-from AbstractDecisionTree import print_breadth_first
+from AbstractDecisionTree import print_breadth_first, get_dataframe
 import random
 import numpy as np
 
@@ -87,6 +87,7 @@ class RandomForest:
         return np.mean(prediction_list)
 
 if __name__ == '__main__':
+    df, individual_val, true_value = get_dataframe(True)
     rf = RandomForest(df, 'y', max_depth=3, min_sample_split=10, min_impurity_decrease=0, num_trees=3)
     rf.create_trees()
 

@@ -1,8 +1,9 @@
 """Functions that can be used to view the decision tree splits"""
 from abc import abstractmethod
-
+from sklearn.datasets import load_breast_cancer, load_diabetes
 from math import sqrt, floor
 import random
+import pandas as pd
 
 class DecisionTree:
 
@@ -167,3 +168,18 @@ def print_breadth_first(node):
     """
     for i in range(0, node.max_depth+1):
         print_current_level(node,i)
+
+def get_dataframe(classification=True):
+    if classification:
+        data_bunch = load_breast_cancer()
+    else:
+        data_bunch = load_diabetes()
+
+    cols = [c.replace(' ', '_') for c in data_bunch['feature_names']]
+    df = pd.DataFrame(data_bunch['data'], columns=cols)
+    df['y'] = data_bunch['target']
+    individual_val = df.loc[0, df.columns != 'y']
+    true_value = df.loc[0, 'y']
+
+    return df, individual_val, true_value
+
