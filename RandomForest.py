@@ -1,7 +1,8 @@
-from ClassificationTree import ClassificationTree, df
+from ClassificationTree import ClassificationTree, df, individual_val, true_value
 from RegressionTree import RegressionTree
 from AbstractDecisionTree import print_breadth_first
 import random
+import numpy as np
 
 class RandomForest:
     def __init__(self, dataframe, y_col='target', classification=True, num_trees=3,
@@ -57,10 +58,42 @@ class RandomForest:
 
         return model
 
+    def predict_proba(self, data_row):
+        if not self.classification:
+            raise AttributeError("predict_proba not available for regression model")
+
+        prediction_list = []
+
+        for decision_tree in self.tree_list:
+            percentage = decision_tree.predict_proba(data_row)
+            prediction_list.append(percentage)
+
+        return np.mean(prediction_list)
+
+    def predict(self, data_row, cutoff=0.5):
+        if self.classification:
+            if self.predict_proba(data_row) >= cutoff:
+                return 1
+            else:
+                return 0
+
+        else:
+            prediction_list = []
+
+            for decision_tree in self.tree_list:
+                percentage = decision_tree.predict(data_row)
+                prediction_list.append(percentage)
+
+        return np.mean(prediction_list)
+
 if __name__ == '__main__':
     rf = RandomForest(df, 'y', max_depth=3, min_sample_split=10, min_impurity_decrease=0, num_trees=3)
     rf.create_trees()
 
     for idx, tree in enumerate(rf.tree_list):
         print('~~~TREE NUMBER {}~~~'.format(idx+1))
-        print_breadth_first(tree)
+        # print_breadth_first(tree)
+
+    prob = rf.predict_proba(individual_val)
+    class_ = rf.predict(individual_val)
+    print('predicted:', np.round(prob, 3),',', class_, 'actual:', true_value)

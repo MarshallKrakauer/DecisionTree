@@ -15,6 +15,7 @@ df = pd.DataFrame(data_bunch['data'], columns=cols)
 df['y'] = data_bunch['target']
 
 individual_val = df.loc[0, df.columns != 'y']
+true_value = df.loc[0, 'y']
 
 class ClassificationTree(DecisionTree):
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
@@ -115,6 +116,7 @@ class ClassificationTree(DecisionTree):
                                              min_sample_split=self.min_sample_split,
                                              min_impurity_decrease=self.min_impurity_decrease,
                                              random_seed=random.random())
+
         self.right_child = ClassificationTree(dataframe= self.df[self.df[self.best_column] <= self.best_split],
                                               y_col=self.y_col,
                                               parent=self,
@@ -155,4 +157,4 @@ if __name__ == '__main__':
     print_breadth_first(dn)
     probability_0_ = dn.predict_proba(individual_val)
     probability_1_ = dn.predict(individual_val)
-    print(probability_0_, probability_1_)
+    print(probability_0_, probability_1_, true_value)
