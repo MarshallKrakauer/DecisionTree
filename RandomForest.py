@@ -1,5 +1,6 @@
 from ClassificationTree import ClassificationTree, df
 from RegressionTree import RegressionTree
+from AbstractDecisionTree import print_breadth_first
 import random
 
 class RandomForest:
@@ -57,5 +58,9 @@ class RandomForest:
         return model
 
 if __name__ == '__main__':
-    dn = RandomForest(df, 'y', max_depth=3, min_sample_split=10, min_impurity_decrease=0, num_trees=2)
-    dn.create_trees()
+    rf = RandomForest(df, 'y', max_depth=3, min_sample_split=10, min_impurity_decrease=0, num_trees=3)
+    rf.create_trees()
+
+    for idx, tree in enumerate(rf.tree_list):
+        print('~~~TREE NUMBER {}~~~'.format(idx+1))
+        print_breadth_first(tree)
