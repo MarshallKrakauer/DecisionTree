@@ -87,8 +87,10 @@ class RandomForest:
         return np.mean(prediction_list)
 
 if __name__ == '__main__':
-    df, individual_val, true_value = get_dataframe(True)
-    rf = RandomForest(df, 'y', max_depth=3, min_sample_split=10, min_impurity_decrease=0, num_trees=3)
+    is_classification = False
+
+    df, individual_val, true_value = get_dataframe(is_classification)
+    rf = RandomForest(dataframe=df, y_col='y',classification=False, max_depth=4, min_sample_split=5, num_trees=3)
     rf.create_trees()
 
     # Tested printing breadth first. Tests succeeded. Code currently commented out due to it's long output
@@ -96,6 +98,10 @@ if __name__ == '__main__':
     #     print('~~~TREE NUMBER {}~~~'.format(idx+1))
     #     print_breadth_first(tree)
 
-    prob = rf.predict_proba(individual_val)
-    class_ = rf.predict(individual_val)
-    print('predicted:', np.round(prob, 3),',', class_, 'actual:', true_value)
+    if is_classification:
+        prob = rf.predict_proba(individual_val)
+        class_ = rf.predict(individual_val)
+        print('predicted:', np.round(prob, 3),',', class_, 'actual:', true_value)
+    else:
+        value = rf.predict(individual_val)
+        print('predicted:', np.round(value, 3), 'actual:', true_value)

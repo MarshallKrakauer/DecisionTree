@@ -1,4 +1,4 @@
-"""Regression Tree. Currently testing, but it can produce predictions. Inherits from ClassificationTree"""
+"""Fits on a pandas Dataframe and can predict value on a single row of data."""
 
 import random
 from sklearn.metrics import mean_squared_error
