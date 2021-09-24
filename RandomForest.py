@@ -90,9 +90,10 @@ if __name__ == '__main__':
     rf = RandomForest(df, 'y', max_depth=3, min_sample_split=10, min_impurity_decrease=0, num_trees=3)
     rf.create_trees()
 
-    for idx, tree in enumerate(rf.tree_list):
-        print('~~~TREE NUMBER {}~~~'.format(idx+1))
-        # print_breadth_first(tree)
+    # Tested printing breadth first. Tests succeeded. Code currently commented out due to it's long output
+    # for idx, tree in enumerate(rf.tree_list):
+    #     print('~~~TREE NUMBER {}~~~'.format(idx+1))
+    #     print_breadth_first(tree)
 
     prob = rf.predict_proba(individual_val)
     class_ = rf.predict(individual_val)
