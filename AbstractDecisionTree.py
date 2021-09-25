@@ -36,7 +36,7 @@ class DecisionTree:
         Value from which the best column is split on
     """
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
-                 min_sample_split=0, min_impurity_decrease=float('-inf')):
+                 min_sample_split=0, min_impurity_decrease=float('-inf'), bootstrap=True):
         self.df = dataframe
         self.y_col = y_col
         self.depth = depth
@@ -45,12 +45,16 @@ class DecisionTree:
         self.min_impurity_decrease = min_impurity_decrease
         self.parent = parent
         self.random_seed = random_seed
+        self.bootstrap = bootstrap
         self.left_child = None
         self.right_child = None
         self.split_criterion = None
         self.best_column = None
         self.best_split = None
         self.is_terminal = False
+
+        if self.bootstrap:
+            self.df = self.df.sample(frac=1, replace=True,random_state=int(self.random_seed))
 
         # Check to see if node is terminal
         if self.depth == self.max_depth:

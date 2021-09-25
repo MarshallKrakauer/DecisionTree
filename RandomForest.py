@@ -88,15 +88,17 @@ class RandomForest:
 
 if __name__ == '__main__':
     is_classification = False
+    print_trees = False
 
     df, individual_val, true_value = get_dataframe(is_classification)
-    rf = RandomForest(dataframe=df, y_col='y',classification=False, max_depth=4, min_sample_split=5, num_trees=3)
+    rf = RandomForest(dataframe=df, y_col='y',classification=is_classification,
+                      max_depth=4, min_sample_split=5, num_trees=3, random_seed=702)
     rf.create_trees()
 
-    # Tested printing breadth first. Tests succeeded. Code currently commented out due to it's long output
-    # for idx, tree in enumerate(rf.tree_list):
-    #     print('~~~TREE NUMBER {}~~~'.format(idx+1))
-    #     print_breadth_first(tree)
+    if print_trees:
+        for idx, tree in enumerate(rf.tree_list):
+            print('~~~TREE NUMBER {}~~~'.format(idx+1))
+            print_breadth_first(tree)
 
     if is_classification:
         prob = rf.predict_proba(individual_val)

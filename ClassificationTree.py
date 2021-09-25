@@ -140,7 +140,7 @@ class ClassificationTree(DecisionTree):
 
 if __name__ == '__main__':
     df, individual_val, true_value = get_dataframe(True)
-    dn = ClassificationTree(df, 'y', max_depth=4, min_sample_split=5, min_impurity_decrease=0)
+    dn = ClassificationTree(df, 'y', max_depth=4, min_sample_split=5, min_impurity_decrease=0, random_seed=777)
     dn.create_tree()
     print_breadth_first(dn)
     probability_0_ = dn.predict_proba(individual_val)
