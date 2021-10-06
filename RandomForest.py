@@ -92,7 +92,7 @@ if __name__ == '__main__':
 
     df, individual_val, true_value = get_dataframe(is_classification)
     rf = RandomForest(dataframe=df, y_col='y',classification=is_classification,
-                      max_depth=4, min_sample_split=5, num_trees=3, random_seed=777)
+                      max_depth=4, min_sample_split=2, num_trees=3, random_seed=777)
     rf.create_trees()
 
     if print_trees:
