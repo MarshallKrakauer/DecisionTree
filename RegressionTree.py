@@ -123,7 +123,6 @@ class RegressionTree(DecisionTree):
                                           min_impurity_decrease=self.min_impurity_decrease,
                                           random_seed=random.random())
 
-
 if __name__ == '__main__':
     df, individual_val, true_value = get_dataframe(False)
     dn = RegressionTree(df, 'y')

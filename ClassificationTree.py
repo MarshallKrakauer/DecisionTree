@@ -59,6 +59,7 @@ class ClassificationTree(DecisionTree):
 
         if len_0 < self.min_sample_split or len_1 < self.min_sample_split:
             return float('inf')
+
         # Calculate gini score for each dataframe
         for split in [df_0, df_1]:
             temp_score = 0

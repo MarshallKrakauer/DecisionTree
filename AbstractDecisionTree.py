@@ -123,7 +123,7 @@ class DecisionTree:
 
         impurity_decrease = parent_gini - best_gini_value
 
-        if impurity_decrease > self.min_impurity_decrease:
+        if self.min_impurity_decrease is None or impurity_decrease > self.min_impurity_decrease:
             self.split_criterion = best_gini_value
             self.best_column = best_column
             self.best_split = best_split

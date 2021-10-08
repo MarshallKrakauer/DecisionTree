@@ -1,6 +1,6 @@
 """In progress, tree will implement XGBoost Algorithm"""
 
-from math import sqrt, floor
+# from math import sqrt, floor
 import random
 from ClassificationTree import ClassificationTree, get_dataframe, print_breadth_first
 
@@ -9,8 +9,10 @@ class XGBCTree(ClassificationTree):
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
                  min_sample_split=0, min_impurity_decrease=float('-inf'),
                  gamma=1, lambda_ = 1, previous_prob=0.5, previous_similarity=0.5):
+
         super().__init__(dataframe, y_col, parent, depth, random_seed, max_depth,
                          min_sample_split, min_impurity_decrease)
+
         self.gamma = gamma
         self.lambda_ = lambda_
         self.previous_prob = previous_prob
@@ -21,8 +23,11 @@ class XGBCTree(ClassificationTree):
         residual_sum = 0
         denominator = 0
 
-        for i in range(len(dataframe)):
-            residual = dataframe.loc[i, self.y_col] - previous_prob
+        targets = dataframe[self.y_col].values
+
+        # Loop through dataframe to calculate similarity score
+        for i in range(len(targets)):
+            residual = targets[i] - previous_prob
             residual_sum += residual * residual
             denominator += previous_prob * (1-previous_prob)
 
@@ -46,7 +51,9 @@ class XGBCTree(ClassificationTree):
         for split in [df_0, df_1]:
             score += self.calculate_similarity(split, self.previous_prob)
 
-        return score - self.similarity
+        # Make the score negative
+        print(len_0, self.similarity - score)
+        return self.similarity - score
 
     def make_split(self):
         """ Make the two child nodes based on the given split"""
@@ -68,7 +75,7 @@ class XGBCTree(ClassificationTree):
                                              gamma=self.gamma,
                                              lambda_ = self.lambda_,
                                              previous_prob=self.previous_prob,
-                                             previous_similarity=self.previous_similarity)
+                                             previous_similarity=self.parent_similarity)
 
         self.right_child = XGBCTree(dataframe= self.df[self.df[self.best_column] <= self.best_split],
                                               y_col=self.y_col,
@@ -81,12 +88,12 @@ class XGBCTree(ClassificationTree):
                                               gamma=self.gamma,
                                               lambda_ = self.lambda_,
                                               previous_prob=self.previous_prob,
-                                              previous_similarity=self.previous_similarity)
+                                              previous_similarity=self.parent_similarity)
 
 if __name__ == '__main__':
     # Testing right now. Code does not currently work
     df, individual_val, true_value = get_dataframe(True)
-    dn = XGBCTree(df, 'y', random_seed=777)
+    dn = XGBCTree(df, 'y', random_seed=0, min_impurity_decrease=None, min_sample_split=-1)
     dn.create_tree()
     print_breadth_first(dn)
     probability_0_ = dn.predict_proba(individual_val)
