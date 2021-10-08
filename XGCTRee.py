@@ -11,7 +11,7 @@ class XGBCTree(ClassificationTree):
                  gamma=1, lambda_ = 1, previous_prob=0.5, previous_similarity=0.5):
 
         super().__init__(dataframe, y_col, parent, depth, random_seed, max_depth,
-                         min_sample_split, min_impurity_decrease)
+                         min_sample_split, min_impurity_decrease, False)
 
         self.gamma = gamma
         self.lambda_ = lambda_
@@ -52,7 +52,6 @@ class XGBCTree(ClassificationTree):
             score += self.calculate_similarity(split, self.previous_prob)
 
         # Make the score negative
-        print(len_0, self.similarity - score)
         return self.similarity - score
 
     def make_split(self):
@@ -93,7 +92,7 @@ class XGBCTree(ClassificationTree):
 if __name__ == '__main__':
     # Testing right now. Code does not currently work
     df, individual_val, true_value = get_dataframe(True)
-    dn = XGBCTree(df, 'y', random_seed=0, min_impurity_decrease=None, min_sample_split=-1)
+    dn = XGBCTree(df, 'y', random_seed=999, min_impurity_decrease=None, min_sample_split=-1)
     dn.create_tree()
     print_breadth_first(dn)
     probability_0_ = dn.predict_proba(individual_val)

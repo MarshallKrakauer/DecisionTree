@@ -6,10 +6,10 @@ from AbstractDecisionTree import print_breadth_first, DecisionTree, get_datafram
 
 class ClassificationTree(DecisionTree):
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
-                 min_sample_split=0, min_impurity_decrease=float('-inf')):
+                 min_sample_split=0, min_impurity_decrease=float('-inf'), bootstrap=True):
 
         super().__init__(dataframe, y_col, parent, depth, random_seed, max_depth,
-                     min_sample_split, min_impurity_decrease)
+                     min_sample_split, min_impurity_decrease,bootstrap)
 
     def __str__(self):
         """
