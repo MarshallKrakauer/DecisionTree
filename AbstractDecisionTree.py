@@ -91,8 +91,8 @@ class DecisionTree:
         :return list: list of columns which to check for splits
         """
         random.seed(self.random_seed)
+        features = self.df.columns
         num_columns = floor(sqrt(len(self.df.columns)))
-        features = [col for col in self.df.columns if col != self.y_col]
 
         col_list = random.sample(features,num_columns)
         return col_list
