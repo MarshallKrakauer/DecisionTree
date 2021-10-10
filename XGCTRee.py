@@ -35,13 +35,12 @@ class XGBCTree(ClassificationTree):
 
         # Loop through dataframe to calculate similarity score
         for i in range(len(targets)):
-            residual = targets[i] - current_probabilities[i]
-            residual_sum += residual * residual
+            residual_sum += targets[i] - current_probabilities[i]
             denominator += current_probabilities[i] * (1-current_probabilities[i])
 
         denominator += self.lambda_
 
-        return residual_sum / denominator
+        return (residual_sum * residual_sum) / denominator
 
     def calculate_split_criterion(self, column, threshold):
         score = 0  # returning value
@@ -86,7 +85,7 @@ class XGBCTree(ClassificationTree):
                                    random_seed=random.random(),
                                    gamma=self.gamma,
                                    lambda_ = self.lambda_,
-                                   previous_similarity=self.parent_similarity)
+                                   previous_similarity=self.similarity)
 
         self.right_child = XGBCTree(dataframe=right_child_df,
                                     y_col=self.y_col,
@@ -98,7 +97,7 @@ class XGBCTree(ClassificationTree):
                                     random_seed=random.random(),
                                     gamma=self.gamma,
                                     lambda_ = self.lambda_,
-                                    previous_similarity=self.parent_similarity)
+                                    previous_similarity=self.similarity)
 
     def select_columns(self):
         """Choose subset of columns of which to make splits
@@ -142,7 +141,7 @@ if __name__ == '__main__':
     dn = XGBCTree(df, 'y', random_seed=999, min_impurity_decrease=None, min_sample_split=-1)
     dn.create_tree()
     print_breadth_first(dn)
-    # probability_0_ = dn.predict_proba(individual_val)
-    # probability_1_ = dn.predict(individual_val)
-    # print(probability_0_, probability_1_, true_value)
+    probability_0_ = dn.predict_proba(individual_val)
+    probability_1_ = dn.predict(individual_val)
+    print(probability_0_, probability_1_, true_value)
     dn.update_probabilities()
