@@ -26,6 +26,23 @@ class XGBCTree(ClassificationTree):
     def prediction_log_odds(self):
         return [log_odds(p) for p in self.df['observation_probability__']]
 
+    @property
+    def output_value(self):
+        residual_sum = 0
+        denominator = 0
+
+        targets = self.df[self.y_col].values
+        current_probabilities = self.df['observation_probability__'].values
+
+        # Loop through dataframe to calculate similarity score
+        for i in range(len(targets)):
+            residual_sum += targets[i] - current_probabilities[i]
+            denominator += current_probabilities[i] * (1-current_probabilities[i])
+
+        denominator += self.lambda_
+
+        return residual_sum / denominator
+
     def calculate_similarity(self, dataframe):
         residual_sum = 0
         denominator = 0
@@ -118,13 +135,22 @@ class XGBCTree(ClassificationTree):
         tree_predictions = []
 
         for row_num in range(self.df.shape[0]):
-            row_probability = self.predict_proba(self.df.iloc[row_num, :])
-            row_log_odds = log_odds(row_probability)
-            new_log_odds = log_odds_li[row_num]  + self.eta * row_log_odds
+            row_output_value = self.get_output_value(self.df.iloc[row_num, :])
+            new_log_odds = log_odds_li[row_num]  + (self.eta * row_output_value)
             new_prob = exp(new_log_odds) / (1 + exp(new_log_odds))
             tree_predictions.append(new_prob)
 
         self.df['observation_probability__'] = tree_predictions
+
+    def get_output_value(self, data_row):
+        if self.is_terminal:
+            return self.output_value
+        else:
+            value = data_row[self.best_column]
+            if value > self.best_split:
+                return self.left_child.get_output_value(data_row)
+            else:
+                return self.right_child.get_output_value(data_row)
 
 def log_odds(probability):
     if probability == 1:
