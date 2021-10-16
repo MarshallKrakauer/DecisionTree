@@ -1,10 +1,10 @@
-"""In progress, tree will implement XGBoost Algorithm. File does not currently run"""
+"""In progress, tree will implement Gradient Boosting Algorithm for classification. File currently in testing."""
 
 from math import sqrt, floor, log, exp
 import random
 from ClassificationTree import ClassificationTree, get_dataframe, print_breadth_first
 
-class XGBCTree(ClassificationTree):
+class GBCTree(ClassificationTree):
 
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
                  min_sample_split=0, min_impurity_decrease=float('-inf'),
@@ -24,10 +24,16 @@ class XGBCTree(ClassificationTree):
 
     @property
     def prediction_log_odds(self):
+        """Calculate log odds for each current probability prediction."""
         return [log_odds(p) for p in self.df['observation_probability__']]
 
     @property
     def output_value(self):
+        """Output value for each node in the XGBTree
+
+        :return: float: output value used for boosting value
+                like the similarity score, but without the numerator being squared
+        """
         residual_sum = 0
         denominator = 0
 
@@ -44,6 +50,11 @@ class XGBCTree(ClassificationTree):
         return residual_sum / denominator
 
     def calculate_similarity(self, dataframe):
+        """Similarity score for each node and potential node
+
+        :param dataframe: potential dataframe to check for similarity score
+        :return: float: similarity score
+        """
         residual_sum = 0
         denominator = 0
 
@@ -60,6 +71,12 @@ class XGBCTree(ClassificationTree):
         return (residual_sum * residual_sum) / denominator
 
     def calculate_split_criterion(self, column, threshold):
+        """Calculates gain, which is criteria used to make best split
+
+        :param column: potential dataframe to check for similarity score
+        :param threshold: potential dataframe to check for similarity score
+        :return: float: gain in similarity from the parent node
+        """
         score = 0  # returning value
 
         # Split into two dataframes
@@ -92,7 +109,19 @@ class XGBCTree(ClassificationTree):
         left_child_df = self.df[self.df[self.best_column] > self.best_split]
         right_child_df = self.df[self.df[self.best_column] <= self.best_split]
 
-        self.left_child = XGBCTree(dataframe=left_child_df,
+        self.left_child = GBCTree(dataframe=left_child_df,
+                                  y_col=self.y_col,
+                                  parent=self,
+                                  depth=self.depth+1,
+                                  max_depth=self.max_depth,
+                                  min_sample_split=self.min_sample_split,
+                                  min_impurity_decrease=self.min_impurity_decrease,
+                                  random_seed=random.random(),
+                                  gamma=self.gamma,
+                                  lambda_ = self.lambda_,
+                                  previous_similarity=self.similarity)
+
+        self.right_child = GBCTree(dataframe=right_child_df,
                                    y_col=self.y_col,
                                    parent=self,
                                    depth=self.depth+1,
@@ -103,18 +132,6 @@ class XGBCTree(ClassificationTree):
                                    gamma=self.gamma,
                                    lambda_ = self.lambda_,
                                    previous_similarity=self.similarity)
-
-        self.right_child = XGBCTree(dataframe=right_child_df,
-                                    y_col=self.y_col,
-                                    parent=self,
-                                    depth=self.depth+1,
-                                    max_depth=self.max_depth,
-                                    min_sample_split=self.min_sample_split,
-                                    min_impurity_decrease=self.min_impurity_decrease,
-                                    random_seed=random.random(),
-                                    gamma=self.gamma,
-                                    lambda_ = self.lambda_,
-                                    previous_similarity=self.similarity)
 
     def select_columns(self):
         """Choose subset of columns of which to make splits
@@ -131,6 +148,7 @@ class XGBCTree(ClassificationTree):
         return col_list
 
     def update_probabilities(self):
+        """Update the dataframe probabilities using the gradient boosting algorithms."""
         log_odds_li = self.prediction_log_odds
         tree_predictions = []
 
@@ -143,6 +161,12 @@ class XGBCTree(ClassificationTree):
         self.df['observation_probability__'] = tree_predictions
 
     def get_output_value(self, data_row):
+        """Obtain output value (one used by gradient boosting algorithm) for a given row of data
+
+        Recursive function. Searches for a terminal node.
+
+        :param data_row: series from which to produce the output value.
+        """
         if self.is_terminal:
             return self.output_value
         else:
@@ -153,6 +177,9 @@ class XGBCTree(ClassificationTree):
                 return self.right_child.get_output_value(data_row)
 
 def log_odds(probability):
+    """Calculate the log odds for a given number.
+    To prevent an undefined value (div by 0 or log(0)), I impute 100 and -100 for undefined values.
+    """
     if probability == 1:
         return 100
     elif probability == 0:
@@ -164,7 +191,7 @@ def log_odds(probability):
 if __name__ == '__main__':
     # Testing right now. Code does not currently work
     df, individual_val, true_value = get_dataframe(True)
-    dn = XGBCTree(df, 'y', random_seed=999, min_impurity_decrease=None, min_sample_split=-1)
+    dn = GBCTree(df, 'y', random_seed=999, min_impurity_decrease=None, min_sample_split=-1)
     dn.create_tree()
     print_breadth_first(dn)
     probability_0_ = dn.predict_proba(individual_val)
