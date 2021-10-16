@@ -1,14 +1,15 @@
-"""In progress, tree will implement Gradient Boosting Algorithm for classification. File currently in testing."""
+"""Tree for Gradient Boosting Model. Currently missing lambda implementation, but the rest functions."""
 
 from math import sqrt, floor, log, exp
 import random
 from ClassificationTree import ClassificationTree, get_dataframe, print_breadth_first
 
+
 class GBCTree(ClassificationTree):
 
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
                  min_sample_split=0, min_impurity_decrease=float('-inf'),
-                 gamma=1, lambda_ = 1, previous_similarity=0, eta = 0.3):
+                 gamma=1, lambda_=1, previous_similarity=0, eta=0.3):
 
         if 'observation_probability__' not in dataframe.columns:
             dataframe['observation_probability__'] = 0.5
@@ -43,7 +44,7 @@ class GBCTree(ClassificationTree):
         # Loop through dataframe to calculate similarity score
         for i in range(len(targets)):
             residual_sum += targets[i] - current_probabilities[i]
-            denominator += current_probabilities[i] * (1-current_probabilities[i])
+            denominator += current_probabilities[i] * (1 - current_probabilities[i])
 
         denominator += self.lambda_
 
@@ -64,7 +65,7 @@ class GBCTree(ClassificationTree):
         # Loop through dataframe to calculate similarity score
         for i in range(len(targets)):
             residual_sum += targets[i] - current_probabilities[i]
-            denominator += current_probabilities[i] * (1-current_probabilities[i])
+            denominator += current_probabilities[i] * (1 - current_probabilities[i])
 
         denominator += self.lambda_
 
@@ -80,7 +81,7 @@ class GBCTree(ClassificationTree):
         score = 0  # returning value
 
         # Split into two dataframes
-        df_0 = self.df[self.df[column]  > threshold]
+        df_0 = self.df[self.df[column] > threshold]
         len_0 = len(df_0)
         df_1 = self.df[self.df[column] <= threshold]
         len_1 = len(df_1)
@@ -112,26 +113,28 @@ class GBCTree(ClassificationTree):
         self.left_child = GBCTree(dataframe=left_child_df,
                                   y_col=self.y_col,
                                   parent=self,
-                                  depth=self.depth+1,
+                                  depth=self.depth + 1,
                                   max_depth=self.max_depth,
                                   min_sample_split=self.min_sample_split,
                                   min_impurity_decrease=self.min_impurity_decrease,
                                   random_seed=random.random(),
                                   gamma=self.gamma,
-                                  lambda_ = self.lambda_,
-                                  previous_similarity=self.similarity)
+                                  lambda_=self.lambda_,
+                                  previous_similarity=self.similarity,
+                                  eta=self.eta)
 
         self.right_child = GBCTree(dataframe=right_child_df,
                                    y_col=self.y_col,
                                    parent=self,
-                                   depth=self.depth+1,
+                                   depth=self.depth + 1,
                                    max_depth=self.max_depth,
                                    min_sample_split=self.min_sample_split,
                                    min_impurity_decrease=self.min_impurity_decrease,
                                    random_seed=random.random(),
                                    gamma=self.gamma,
-                                   lambda_ = self.lambda_,
-                                   previous_similarity=self.similarity)
+                                   lambda_=self.lambda_,
+                                   previous_similarity=self.similarity,
+                                   eta=self.eta)
 
     def select_columns(self):
         """Choose subset of columns of which to make splits
@@ -144,7 +147,7 @@ class GBCTree(ClassificationTree):
         features.remove(self.y_col)
         features.remove('observation_probability__')
         num_columns = floor(sqrt(len(features)))
-        col_list = random.sample(features,num_columns)
+        col_list = random.sample(features, num_columns)
         return col_list
 
     def update_probabilities(self):
@@ -154,7 +157,7 @@ class GBCTree(ClassificationTree):
 
         for row_num in range(self.df.shape[0]):
             row_output_value = self.get_output_value(self.df.iloc[row_num, :])
-            new_log_odds = log_odds_li[row_num]  + (self.eta * row_output_value)
+            new_log_odds = log_odds_li[row_num] + (self.eta * row_output_value)
             new_prob = exp(new_log_odds) / (1 + exp(new_log_odds))
             tree_predictions.append(new_prob)
 
@@ -176,6 +179,7 @@ class GBCTree(ClassificationTree):
             else:
                 return self.right_child.get_output_value(data_row)
 
+
 def log_odds(probability):
     """Calculate the log odds for a given number.
     To prevent an undefined value (div by 0 or log(0)), I impute 100 and -100 for undefined values.
@@ -185,7 +189,7 @@ def log_odds(probability):
     elif probability == 0:
         return -100
     else:
-        return log(probability / (1-probability))
+        return log(probability / (1 - probability))
 
 
 if __name__ == '__main__':
@@ -196,5 +200,6 @@ if __name__ == '__main__':
     print_breadth_first(dn)
     probability_0_ = dn.predict_proba(individual_val)
     probability_1_ = dn.predict(individual_val)
-    print(probability_0_, probability_1_, true_value)
+    #print(probability_0_, probability_1_, true_value)
     dn.update_probabilities()
+    print(dn.df.head())
