@@ -43,7 +43,7 @@ class ClassificationTree(DecisionTree):
 
     def calculate_split_criterion(self, column, threshold):
         """
-        Calculate the gini impurity for a given split at a given column
+        Calculate the gini impurity for a givegit n split at a given column
 
         :param column: Column from which to make check split on
         :param threshold: number at which to split
