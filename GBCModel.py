@@ -1,4 +1,4 @@
-"""Gradient Boosting Classier Model. It is currently in creation and will not run."""
+"""Gradient Boosting Classier Model. It currently runs, but the trees don't work properly"""
 
 import random
 from GBCTree import GBCTree
@@ -55,7 +55,7 @@ class GBCModel:
         if True:  # placeholder, will contain true if/else once regression is implemented
             model = GBCTree(dataframe=dataframe,
                             y_col=self.y_col,
-                            parent=self,
+                            parent=None,
                             depth=0,
                             max_depth=self.max_depth,
                             min_sample_split=self.min_sample_split,
@@ -68,11 +68,11 @@ class GBCModel:
         return model
 
 if __name__ == '__main__':
-    is_classification = False
-    print_trees = False
+    is_classification = True
+    print_trees = True
 
     df, individual_val, true_value = get_dataframe(is_classification)
-    gbm = GBCModel(dataframe=df, y_col='y', max_depth=4, min_sample_split=2, num_trees=3, random_seed=777)
+    gbm = GBCModel(dataframe=df, y_col='y', max_depth=3, min_impurity_decrease=None, num_trees=3, random_seed=777)
     gbm.make_gbm()
 
     if print_trees:
