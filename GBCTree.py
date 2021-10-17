@@ -39,7 +39,7 @@ class GBCTree(ClassificationTree):
 
         # Different outputs for internal or leaf node
         if self.split_criterion is not None:
-            gini_str = 'Similarity: ' + str(round(self.split_criterion, 3)) * -1
+            gini_str = 'Gain: ' + str(abs(round(self.split_criterion, 3)))
             split_str = ' at ' + str(round(self.best_split, 3))
             size_str = 'Size: ' + str(len(self.df))
             col_str = 'Feature: ' + self.best_column
