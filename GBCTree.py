@@ -23,6 +23,32 @@ class GBCTree(ClassificationTree):
         self.eta = eta
         self.similarity = self.calculate_similarity(self.df)
 
+    def __str__(self):
+        """
+        Creates string value to represent node
+
+        :return str: String with information about node
+        """
+        depth_str = 'Depth: ' + str(self.depth)
+
+        # Internal or leaf node
+        if self.is_terminal:
+            terminal_str = 'Leaf, '
+        else:
+            terminal_str = 'Int, '
+
+        # Different outputs for internal or leaf node
+        if self.split_criterion is not None:
+            gini_str = 'Similarity: ' + str(round(self.split_criterion, 3)) * -1
+            split_str = ' at ' + str(round(self.best_split, 3))
+            size_str = 'Size: ' + str(len(self.df))
+            col_str = 'Feature: ' + self.best_column
+            return terminal_str + size_str + ' ' + depth_str + ' ' +  gini_str + ' ' + col_str +  split_str
+        else:
+            size_str = 'Size: ' + str(len(self.df))
+            prob_str = 'Prob: ' + str(round(self.probability,3))
+            return terminal_str + size_str + ' ' + depth_str + ' ' + prob_str
+
     @property
     def prediction_log_odds(self):
         """Calculate log odds for each current probability prediction."""
