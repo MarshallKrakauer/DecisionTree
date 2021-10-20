@@ -6,10 +6,10 @@ from AbstractDecisionTree import print_breadth_first, DecisionTree, get_datafram
 
 class ClassificationTree(DecisionTree):
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
-                 min_sample_split=0, min_impurity_decrease=float('-inf'), bootstrap=True):
+                 min_sample_split=0, min_impurity_decrease=float('-inf'), bootstrap=True, gamma=None):
 
         super().__init__(dataframe, y_col, parent, depth, random_seed, max_depth,
-                     min_sample_split, min_impurity_decrease,bootstrap)
+                     min_sample_split, min_impurity_decrease,bootstrap,gamma)
 
     def __str__(self):
         """
@@ -43,7 +43,7 @@ class ClassificationTree(DecisionTree):
 
     def calculate_split_criterion(self, column, threshold):
         """
-        Calculate the gini impurity for a givegit n split at a given column
+        Calculate the gini impurity for a given split at a given column
 
         :param column: Column from which to make check split on
         :param threshold: number at which to split

@@ -59,7 +59,6 @@ class GBCModel:
                             depth=0,
                             max_depth=self.max_depth,
                             min_sample_split=self.min_sample_split,
-                            min_impurity_decrease=self.min_impurity_decrease,
                             random_seed=seed,
                             gamma=self.gamma,
                             lambda_=self.lambda_,
@@ -72,7 +71,8 @@ if __name__ == '__main__':
     print_trees = True
 
     df, individual_val, true_value = get_dataframe(is_classification)
-    gbm = GBCModel(dataframe=df, y_col='y', max_depth=3, min_impurity_decrease=None, num_trees=3, random_seed=777)
+    gbm = GBCModel(dataframe=df, y_col='y', max_depth=3, gamma = 2,
+                   num_trees=3, random_seed=777)
     gbm.make_gbm()
 
     if print_trees:

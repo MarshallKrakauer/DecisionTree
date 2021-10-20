@@ -36,7 +36,7 @@ class DecisionTree:
         Value from which the best column is split on
     """
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
-                 min_sample_split=0, min_impurity_decrease=float('-inf'), bootstrap=True):
+                 min_sample_split=0, min_impurity_decrease=float('-inf'), bootstrap=True, gamma=None):
         self.df = dataframe
         self.y_col = y_col
         self.depth = depth
@@ -52,6 +52,7 @@ class DecisionTree:
         self.best_column = None
         self.best_split = None
         self.is_terminal = False
+        self.gamma = gamma
 
         if self.bootstrap:
             self.df = self.df.sample(frac=1, replace=True,random_state=int(self.random_seed))
@@ -104,28 +105,28 @@ class DecisionTree:
         """
         best_column = None  # column that provides best split
         best_split = None  # value which provides best split
-        best_gini_value = float('inf') # stores value for best split
+        best_split_value = float('inf') # stores value for best split
 
         for col in self.select_columns():
             # Get the list of splits for each column and find the best gini value
             split_li = self.get_split_list(col)
             for split in split_li:
-                current_gini_value = self.calculate_split_criterion(col, split)
-                if current_gini_value <= best_gini_value:
-                    best_gini_value = current_gini_value
+                current_split_value = self.calculate_split_criterion(col, split)
+                if current_split_value <= best_split_value:
+                    best_split_value = current_split_value
                     best_column = col
                     best_split = split
 
         # todo Add a min impurity gain
         if self.parent is not None:
-            parent_gini = self.parent.split_criterion
+            parent_split_val = self.parent.split_criterion
         else:
-            parent_gini = float('inf')
+            parent_split_val = float('inf')
 
-        impurity_decrease = parent_gini - best_gini_value
+        impurity_decrease = parent_split_val - best_split_value
 
-        if self.min_impurity_decrease is None or impurity_decrease > self.min_impurity_decrease:
-            self.split_criterion = best_gini_value
+        if self.min_impurity_decrease or impurity_decrease > self.min_impurity_decrease:
+            self.split_criterion = best_split_value
             self.best_column = best_column
             self.best_split = best_split
         else:

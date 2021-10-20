@@ -8,14 +8,13 @@ from ClassificationTree import ClassificationTree, get_dataframe, print_breadth_
 class GBCTree(ClassificationTree):
 
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
-                 min_sample_split=0, min_impurity_decrease=float('-inf'),
-                 gamma=1, lambda_=1, previous_similarity=0, eta=0.3):
+                 min_sample_split=0, gamma=1, lambda_=1, previous_similarity=0, eta=0.3):
 
         if 'observation_probability__' not in dataframe.columns:
             dataframe['observation_probability__'] = 0.5
 
         super().__init__(dataframe, y_col, parent, depth, random_seed, max_depth,
-                         min_sample_split, min_impurity_decrease, False)
+                         min_sample_split, None, False, gamma)
 
         self.gamma = gamma
         self.lambda_ = lambda_
@@ -47,7 +46,7 @@ class GBCTree(ClassificationTree):
         else:
             size_str = 'Size: ' + str(len(self.df))
             prob_str = 'Prob: ' + str(round(self.probability,3))
-            return terminal_str + size_str + ' ' + depth_str + ' ' + prob_str
+            return gini_str + ' ' + terminal_str + size_str + ' ' + depth_str + ' ' + prob_str
 
     @property
     def prediction_log_odds(self):
@@ -142,7 +141,6 @@ class GBCTree(ClassificationTree):
                                   depth=self.depth + 1,
                                   max_depth=self.max_depth,
                                   min_sample_split=self.min_sample_split,
-                                  min_impurity_decrease=self.min_impurity_decrease,
                                   random_seed=random.random(),
                                   gamma=self.gamma,
                                   lambda_=self.lambda_,
@@ -155,7 +153,6 @@ class GBCTree(ClassificationTree):
                                    depth=self.depth + 1,
                                    max_depth=self.max_depth,
                                    min_sample_split=self.min_sample_split,
-                                   min_impurity_decrease=self.min_impurity_decrease,
                                    random_seed=random.random(),
                                    gamma=self.gamma,
                                    lambda_=self.lambda_,
@@ -221,7 +218,7 @@ def log_odds(probability):
 if __name__ == '__main__':
     # Testing right now. Code does not currently work
     df, individual_val, true_value = get_dataframe(True)
-    dn = GBCTree(df, 'y', random_seed=999, min_impurity_decrease=None, min_sample_split=-1)
+    dn = GBCTree(df, 'y', random_seed=999, min_sample_split=-1, gamma=-999)
     dn.create_tree()
     print_breadth_first(dn)
     probability_0_ = dn.predict_proba(individual_val)
