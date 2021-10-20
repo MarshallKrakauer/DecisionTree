@@ -125,7 +125,7 @@ class DecisionTree:
 
         impurity_decrease = parent_split_val - best_split_value
 
-        if self.min_impurity_decrease or impurity_decrease > self.min_impurity_decrease:
+        if self.min_impurity_decrease is None or impurity_decrease > self.min_impurity_decrease:
             self.split_criterion = best_split_value
             self.best_column = best_column
             self.best_split = best_split

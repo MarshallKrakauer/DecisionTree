@@ -202,6 +202,16 @@ class GBCTree(ClassificationTree):
             else:
                 return self.right_child.get_output_value(data_row)
 
+    def prune_tree(self):
+        if self.max_depth <= 1:
+            self.left_child.prune_tree()
+            self.right_child.prune_tree()
+        else:
+            if abs(self.split_criterion) < self.gamma:
+                self.is_terminal = True
+                self.left_child = None
+                self.right_child = None
+
 
 def log_odds(probability):
     """Calculate the log odds for a given number.
