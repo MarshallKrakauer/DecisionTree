@@ -202,16 +202,6 @@ class GBCTree(ClassificationTree):
             else:
                 return self.right_child.get_output_value(data_row)
 
-    def prune_tree(self):
-        if self.max_depth <= 1:
-            self.left_child.prune_tree()
-            self.right_child.prune_tree()
-        else:
-            if abs(self.split_criterion) < self.gamma:
-                self.is_terminal = True
-                self.left_child = None
-                self.right_child = None
-
 
 def log_odds(probability):
     """Calculate the log odds for a given number.
@@ -228,7 +218,7 @@ def log_odds(probability):
 if __name__ == '__main__':
     # Testing right now. Code does not currently work
     df, individual_val, true_value = get_dataframe(True)
-    dn = GBCTree(df, 'y', random_seed=999, min_sample_split=-1, gamma=-999)
+    dn = GBCTree(df, 'y', random_seed=999, min_sample_split=-1, gamma=1)
     dn.create_tree()
     print_breadth_first(dn)
     probability_0_ = dn.predict_proba(individual_val)
