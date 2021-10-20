@@ -235,4 +235,3 @@ if __name__ == '__main__':
     probability_1_ = dn.predict(individual_val)
     #print(probability_0_, probability_1_, true_value)
     dn.update_probabilities()
-    print(dn.df.head())
