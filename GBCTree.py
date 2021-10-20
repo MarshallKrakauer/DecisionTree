@@ -46,7 +46,7 @@ class GBCTree(ClassificationTree):
         else:
             size_str = 'Size: ' + str(len(self.df))
             prob_str = 'Prob: ' + str(round(self.probability,3))
-            return gini_str + ' ' + terminal_str + size_str + ' ' + depth_str + ' ' + prob_str
+            return terminal_str + size_str + ' ' + depth_str + ' ' + prob_str
 
     @property
     def prediction_log_odds(self):
