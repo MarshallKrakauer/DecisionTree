@@ -37,7 +37,7 @@ class GBCTree(ClassificationTree):
             terminal_str = 'Int, '
 
         # Different outputs for internal or leaf node
-        if self.split_criterion is not None:
+        if not self.is_terminal:
             gini_str = 'Gain: ' + str(abs(round(self.split_criterion, 3)))
             split_str = ' at ' + str(round(self.best_split, 3))
             size_str = 'Size: ' + str(len(self.df))
