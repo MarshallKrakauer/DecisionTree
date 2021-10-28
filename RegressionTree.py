@@ -1,6 +1,7 @@
 """Fits on a pandas Dataframe and can predict value on a single row of data."""
 
 import random
+from math import floor
 from sklearn.metrics import mean_squared_error
 from AbstractDecisionTree import print_breadth_first, DecisionTree, get_dataframe
 
@@ -8,10 +9,10 @@ from AbstractDecisionTree import print_breadth_first, DecisionTree, get_datafram
 class RegressionTree(DecisionTree):
 
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
-                 min_sample_split=0, min_impurity_decrease=float('-inf')):
+                 min_sample_split=0, min_impurity_decrease=float('-inf'), bootstrap=True, gamma=None):
 
         super().__init__(dataframe, y_col, parent, depth, random_seed, max_depth,
-                         min_sample_split, min_impurity_decrease)
+                         min_sample_split, min_impurity_decrease, bootstrap, gamma)
 
     def __str__(self):
         """
@@ -93,6 +94,18 @@ class RegressionTree(DecisionTree):
                 return self.left_child.predict(data_row)
             else:
                 return self.right_child.predict(data_row)
+
+    def select_columns(self):
+        """Choose subset of columns of which to make splits
+
+        :return list: list of columns which to check for splits
+        """
+        random.seed(self.random_seed)
+
+        features = [col for col in self.df.columns if col != self.y_col]
+        num_columns = floor(len(features) / 3)
+        col_list = random.sample(features,num_columns)
+        return col_list
 
     def make_split(self):
         """

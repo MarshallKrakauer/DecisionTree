@@ -1,23 +1,22 @@
-"""Tree for Gradient Boosting Classification Model. Exists to be encapsulated by GBCModel."""
+"""Tree for Gradient Boosting Regression Model.
+
+Currently non-functional, being built based on the classification tree."""
 
 from math import sqrt, floor, log, exp
 import random
-from ClassificationTree import ClassificationTree, get_dataframe, print_breadth_first
+from RegressionTree import RegressionTree # , get_dataframe, print_breadth_first
 
 
-class GBCTree(ClassificationTree):
+class GBRTree(RegressionTree):
 
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
                  min_sample_split=0, gamma=1, lambda_=1, previous_similarity=0, eta=0.3):
 
-        if 'observation_probability__' not in dataframe.columns:
-            dataframe['observation_probability__'] = 0.5
+        if 'observation_prediction' not in dataframe.columns:
+            dataframe['observation_prediction'] = 0.5
 
         super().__init__(dataframe, y_col, parent, depth, random_seed, max_depth,
                          min_sample_split, None, False, gamma)
-
-        if gamma < 0 or lambda_ < 0:
-            raise ValueError('gamma and lambda must be non-negative')
 
         self.gamma = gamma
         self.lambda_ = lambda_
@@ -53,8 +52,13 @@ class GBCTree(ClassificationTree):
 
     @property
     def prediction_log_odds(self):
-        """Calculate log odds for each current probability prediction."""
-        return [log_odds(p) for p in self.df['observation_probability__']]
+        raise NotImplementedError("Log odds does not apply to regression model")
+
+    def probability(self):
+        raise NotImplementedError("Probability does not apply to regression model")
+
+    def predict_proba(self):
+        raise NotImplementedError("Probability does not apply to regression model")
 
     @property
     def output_value(self):
@@ -88,12 +92,12 @@ class GBCTree(ClassificationTree):
         denominator = 0
 
         targets = dataframe[self.y_col].values
-        current_probabilities = dataframe['observation_probability__'].values
+        current_predictions = dataframe['observation_probability__'].values
 
         # Loop through dataframe to calculate similarity score
         for i in range(len(targets)):
-            residual_sum += targets[i] - current_probabilities[i]
-            denominator += current_probabilities[i] * (1 - current_probabilities[i])
+            residual_sum += targets[i] - current_predictions[i]
+            denominator += 1
 
         denominator += self.lambda_
 
@@ -138,7 +142,7 @@ class GBCTree(ClassificationTree):
         left_child_df = self.df[self.df[self.best_column] > self.best_split]
         right_child_df = self.df[self.df[self.best_column] <= self.best_split]
 
-        self.left_child = GBCTree(dataframe=left_child_df,
+        self.left_child = GBRTree(dataframe=left_child_df,
                                   y_col=self.y_col,
                                   parent=self,
                                   depth=self.depth + 1,
@@ -150,7 +154,7 @@ class GBCTree(ClassificationTree):
                                   previous_similarity=self.similarity,
                                   eta=self.eta)
 
-        self.right_child = GBCTree(dataframe=right_child_df,
+        self.right_child = GBRTree(dataframe=right_child_df,
                                    y_col=self.y_col,
                                    parent=self,
                                    depth=self.depth + 1,
@@ -219,12 +223,13 @@ def log_odds(probability):
 
 
 if __name__ == '__main__':
+    pass
     # Testing right now. Code does not currently work
-    df, individual_val, true_value = get_dataframe(True)
-    dn = GBCTree(df, 'y', random_seed=999, min_sample_split=-1, gamma=1)
-    dn.create_tree()
-    print_breadth_first(dn)
-    probability_0_ = dn.predict_proba(individual_val)
-    probability_1_ = dn.predict(individual_val)
-    #print(probability_0_, probability_1_, true_value)
-    dn.update_probabilities()
+    # df, individual_val, true_value = get_dataframe(True)
+    # dn = GBRTree(df, 'y', random_seed=999, min_sample_split=-1, gamma=1)
+    # dn.create_tree()
+    # print_breadth_first(dn)
+    # probability_0_ = dn.predict_proba(individual_val)
+    # probability_1_ = dn.predict(individual_val)
+    # #print(probability_0_, probability_1_, true_value)
+    # dn.update_probabilities()
