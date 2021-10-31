@@ -1,4 +1,4 @@
-"""Tree for Gradient Boosting Model. Currently missing lambda implementation, but the rest functions."""
+"""Tree for Gradient Boosting Classification Model. Exists to be encapsulated by GBCModel."""
 
 from math import sqrt, floor, log, exp
 import random
