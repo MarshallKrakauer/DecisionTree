@@ -2,9 +2,9 @@
 
 Currently non-functional, being built based on the classification tree."""
 
-from math import sqrt, floor, log, exp
+from math import sqrt, floor # , exp
 import random
-from RegressionTree import RegressionTree # , get_dataframe, print_breadth_first
+from RegressionTree import RegressionTree, get_dataframe, print_breadth_first
 
 
 class GBRTree(RegressionTree):
@@ -12,8 +12,8 @@ class GBRTree(RegressionTree):
     def __init__(self, dataframe, y_col='target', parent=None, depth=0, random_seed=0.0, max_depth=3,
                  min_sample_split=0, gamma=1, lambda_=1, previous_similarity=0, eta=0.3):
 
-        if 'observation_prediction' not in dataframe.columns:
-            dataframe['observation_prediction'] = 0.5
+        if 'observation_prediction__' not in dataframe.columns:
+            dataframe['observation_prediction__'] = 0.5
 
         super().__init__(dataframe, y_col, parent, depth, random_seed, max_depth,
                          min_sample_split, None, False, gamma)
@@ -44,10 +44,10 @@ class GBRTree(RegressionTree):
             split_str = ' at ' + str(round(self.best_split, 3))
             size_str = 'Size: ' + str(len(self.df))
             col_str = 'Feature: ' + self.best_column
-            return terminal_str + size_str + ' ' + depth_str + ' ' +  gini_str + ' ' + col_str +  split_str
+            return terminal_str + size_str + ' ' + depth_str + ' ' + gini_str + ' ' + col_str + split_str
         else:
             size_str = 'Size: ' + str(len(self.df))
-            prob_str = 'Prob: ' + str(round(self.probability,3))
+            prob_str = 'Prob: ' + str(round(self.target_mean, 3))
             return terminal_str + size_str + ' ' + depth_str + ' ' + prob_str
 
     @property
@@ -71,7 +71,7 @@ class GBRTree(RegressionTree):
         denominator = 0
 
         targets = self.df[self.y_col].values
-        current_probabilities = self.df['observation_probability__'].values
+        current_probabilities = self.df['observation_prediction__'].values
 
         # Loop through dataframe to calculate similarity score
         for i in range(len(targets)):
@@ -92,7 +92,7 @@ class GBRTree(RegressionTree):
         denominator = 0
 
         targets = dataframe[self.y_col].values
-        current_predictions = dataframe['observation_probability__'].values
+        current_predictions = dataframe['observation_prediction__'].values
 
         # Loop through dataframe to calculate similarity score
         for i in range(len(targets)):
@@ -175,23 +175,22 @@ class GBRTree(RegressionTree):
 
         features = list(self.df.columns)
         features.remove(self.y_col)
-        features.remove('observation_probability__')
+        features.remove('observation_prediction__')
         num_columns = floor(sqrt(len(features)))
         col_list = random.sample(features, num_columns)
         return col_list
 
     def update_probabilities(self):
         """Update the dataframe probabilities using the gradient boosting algorithms."""
-        log_odds_li = self.prediction_log_odds
+        prediction_li = self.df['observation_prediction__']
         tree_predictions = []
 
         for row_num in range(self.df.shape[0]):
             row_output_value = self.get_output_value(self.df.iloc[row_num, :])
-            new_log_odds = log_odds_li[row_num] + (self.eta * row_output_value)
-            new_prob = exp(new_log_odds) / (1 + exp(new_log_odds))
-            tree_predictions.append(new_prob)
+            new_value = prediction_li[row_num] + (self.eta * row_output_value)
+            tree_predictions.append(new_value)
 
-        self.df['observation_probability__'] = tree_predictions
+        self.df['observation_prediction__'] = tree_predictions
 
     def get_output_value(self, data_row):
         """Obtain output value (one used by gradient boosting algorithm) for a given row of data
@@ -210,26 +209,13 @@ class GBRTree(RegressionTree):
                 return self.right_child.get_output_value(data_row)
 
 
-def log_odds(probability):
-    """Calculate the log odds for a given number.
-    To prevent an undefined value (div by 0 or log(0)), I impute 100 and -100 for undefined values.
-    """
-    if probability == 1:
-        return 100
-    elif probability == 0:
-        return -100
-    else:
-        return log(probability / (1 - probability))
-
-
 if __name__ == '__main__':
     pass
-    # Testing right now. Code does not currently work
-    # df, individual_val, true_value = get_dataframe(True)
-    # dn = GBRTree(df, 'y', random_seed=999, min_sample_split=-1, gamma=1)
-    # dn.create_tree()
-    # print_breadth_first(dn)
-    # probability_0_ = dn.predict_proba(individual_val)
+    df, individual_val, true_value = get_dataframe(False)
+    dn = GBRTree(df, 'y', random_seed=999, min_sample_split=-1, gamma=0)
+    dn.create_tree()
+    print_breadth_first(dn)
+    probability_0_ = dn.predict(individual_val)
     # probability_1_ = dn.predict(individual_val)
-    # #print(probability_0_, probability_1_, true_value)
-    # dn.update_probabilities()
+    print('prediction:', probability_0_, 'actual:', true_value)
+    dn.update_probabilities()
