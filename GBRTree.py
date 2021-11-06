@@ -1,8 +1,6 @@
-"""Tree for Gradient Boosting Regression Model.
+"""Tree for Gradient Boosting Regression Model. Exists to feed GBRModel."""
 
-Currently non-functional, being built based on the classification tree."""
-
-from math import sqrt, floor # , exp
+from math import sqrt, floor
 import random
 from RegressionTree import RegressionTree, get_dataframe, print_breadth_first
 
