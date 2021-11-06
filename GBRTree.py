@@ -214,6 +214,5 @@ if __name__ == '__main__':
     dn.create_tree()
     print_breadth_first(dn)
     probability_0_ = dn.predict(individual_val)
-    # probability_1_ = dn.predict(individual_val)
     print('prediction:', probability_0_, 'actual:', true_value)
     dn.update_probabilities()
