@@ -115,8 +115,8 @@ class GBCModel:
         return np.mean(prediction_li)
 
 if __name__ == '__main__':
-    is_classification_0 = True
-    print_trees = False
+    is_classification_0 = False
+    print_trees = True
 
     df, individual_val, true_value = get_dataframe(is_classification_0)
     gbm = GBCModel(dataframe=df, y_col='y', max_depth=3, gamma = 2,
