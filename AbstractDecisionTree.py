@@ -68,7 +68,7 @@ class DecisionTree:
             self.is_terminal = True
 
     def check_dataframe_dtypes(self):
-        """"""
+        """Return error if dataframes aren't object or numeric."""
         for col in self.df.columns:
             data_type = self.df[col].dtype
             if data_type == 'object':
@@ -77,6 +77,12 @@ class DecisionTree:
                 raise ValueError('Columns must be integer, float, or object')
 
     def encode_column(self, categorical_column):
+        """
+        Converts categorical column to an integer column.
+
+        :param categorical_column: str
+            Name of object column to be encoded
+        """
         value_dict = {}
         unique_values = self.df[categorical_column].unique()
         for idx, category in enumerate(unique_values):
