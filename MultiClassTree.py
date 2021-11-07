@@ -15,6 +15,30 @@ class MultiClassTree(ClassificationTree):
 
         super().__init__(dataframe, y_col, parent, depth, random_seed, max_depth,
                      min_sample_split, min_impurity_decrease,bootstrap,gamma)
+    def __str__(self):
+        """
+        Creates string value to represent node
+
+        :return str: String with information about node
+        """
+        depth_str = 'Depth: ' + str(self.depth)
+
+        # Internal or leaf node
+        if self.is_terminal:
+            terminal_str = 'Leaf, '
+        else:
+            terminal_str = 'Int, '
+
+        # Different outputs for internal or leaf node
+        if self.split_criterion is not None:
+            gini_str = 'Gini: ' + str(round(self.split_criterion, 3))
+            split_str = ' at ' + str(round(self.best_split, 3))
+            size_str = 'Size: ' + str(len(self.df))
+            col_str = 'Feature: ' + self.best_column
+            return terminal_str + size_str + ' ' + depth_str + ' ' +  gini_str + ' ' + col_str +  split_str
+        else:
+            size_str = 'Size: ' + str(len(self.df))
+            return terminal_str + size_str + ' ' + depth_str
 
     @property
     def probability(self):
