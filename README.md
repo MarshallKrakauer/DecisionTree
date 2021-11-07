@@ -14,4 +14,6 @@ This repository has a lot of files. I will explain them here:
 7. GBRTree.py - Inherits RegressionTree.py. Creates custom regression tree for a gradient boosting tree algorithm
 8. GradientBoostingModel.py - Creates boosting model using either GBCTree or GBRTree.
 
-Note: The model encodes categorical variables. This might not be appropriate for some uses cases, but it matches the functionality of sklearn. 
+Notes: 
+* The model encodes categorical variables. This might not be appropriate for some uses cases, but it matches the functionality of sklearn. 
+* The "testing_categorical.csv" file exists to test the encoding feature
