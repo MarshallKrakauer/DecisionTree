@@ -73,7 +73,7 @@ class DecisionTree:
             data_type = self.df[col].dtype
             if data_type == 'object':
                 self.encode_column(col)
-            if data_type not in ['int64', 'float64', 'object']:
+            if data_type not in ['int64', 'float64', 'int32', 'float32', 'object']:
                 raise ValueError('Columns must be integer, float, or object')
 
     def encode_column(self, categorical_column):
