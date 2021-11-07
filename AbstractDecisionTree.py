@@ -1,6 +1,6 @@
 """Functions that can be used to view the decision tree splits"""
 from abc import abstractmethod
-from sklearn.datasets import load_breast_cancer, load_diabetes
+from sklearn.datasets import load_breast_cancer, load_diabetes, load_wine
 from math import sqrt, floor
 import random
 import pandas as pd
@@ -143,7 +143,6 @@ class DecisionTree:
                     best_column = col
                     best_split = split
 
-        # todo Add a min impurity gain
         if self.parent is not None:
             parent_split_val = self.parent.split_criterion
         else:
@@ -215,4 +214,14 @@ def get_dataframe(classification=True):
     true_value = df.loc[0, 'y']
 
     return df, individual_val, true_value
+
+def get_multi_class_dataframe():
+    data_bunch = load_wine()
+    df = pd.DataFrame(data_bunch['data'], columns=data_bunch['feature_names'])
+    df.rename(columns={'od280/od315_of_diluted_wines': 'diluted'}, inplace=True)
+    individual_value = df.iloc[0, :]
+    df['y'] = data_bunch['target']
+    true_value = df.loc[0, 'y']
+
+    return df, individual_value, true_value
 
