@@ -65,6 +65,15 @@ class RandomForest:
         return model
 
     def predict_proba(self, data_row):
+        """
+        Probability prediction for classification models
+
+        :param data_row: series
+            Row of data from which to make a prediction
+        :return: float or dict
+            Returns single float value for binary prediction value. For multi class problem,
+            returns a dict with probability for each class
+        """
         if self.target_type == 'continuous':
             raise AttributeError("predict_proba not available for regression model")
 
@@ -88,6 +97,17 @@ class RandomForest:
             return dict(predict_dict)
 
     def predict(self, data_row, cutoff=0.5):
+        """
+        Get predicted value for regression, or predicted class for classification
+
+        :param data_row: series
+            Row of data from which to make a prediction
+        :param cutoff: int
+            Cutoff value for binary prediction. If above or equal to this value, will predict 1. If below,
+            predicts 0. Not used in multi class or regression
+        :return: float or int
+            Single value of the most likely class (with classification). For regression, produces predicted value.
+        """
         if self.target_type == 'binary':
             if self.predict_proba(data_row) >= cutoff:
                 return 1
@@ -111,14 +131,21 @@ class RandomForest:
                 if prediction_dict[key] > max_value:
                     max_value = current_value
                     best_prediction = key
+
             return best_prediction
 
 if __name__ == '__main__':
-    is_classification = False
+    # Select type of trees: binary, multi_class, or continuous (ie regression)
+    prediction_type = 'multi_class'
     print_trees = False
 
-    df, individual_val, true_value = get_multi_class_dataframe()  # get_dataframe(is_classification)
-    rf = RandomForest(dataframe=df, y_col='y',target_type='multi_class',
+    # Different dataframe creation functions for multi_class and binary/continuous
+    if prediction_type == 'multi_class':
+        df, individual_val, true_value = get_multi_class_dataframe()  # get_dataframe(is_classification)
+    else:
+        df, individual_val, true_value = get_dataframe(prediction_type == 'binary')
+
+    rf = RandomForest(dataframe=df, y_col='y',target_type=prediction_type,
                       max_depth=3, num_trees=3, random_seed=777, min_impurity_decrease=0.4)
     rf.create_trees()
 
@@ -127,13 +154,18 @@ if __name__ == '__main__':
             print('~~~TREE NUMBER {}~~~'.format(idx+1))
             print_breadth_first(tree)
 
-    prob = rf.predict_proba(individual_val)
-    value = rf.predict(individual_val)
-    print(prob, value)
-    # if is_classification:
-    #     prob = rf.predict_proba(individual_val)
-    #     class_ = rf.predict(individual_val)
-    #     print('predicted:', np.round(prob, 3),',', class_, 'actual:', true_value)
-    # else:
-    #     value = rf.predict(individual_val)
-    #     print('predicted:', np.round(value, 3), 'actual:', true_value)
+    # For classification trees we can print out predicted value and class
+    # For regression trees, we only have a predicted value
+    if prediction_type in ['binary','multi_class']:
+        prob = rf.predict_proba(individual_val)
+        class_ = rf.predict(individual_val)
+
+        # We have a specific value we can round for binary predictions
+        # For multiclass one, we have the entire dictionary
+        if prediction_type == 'binary':
+            print('predicted:', np.round(prob, 3),',', class_, 'actual:', true_value)
+        else:
+            print('predicted:', prob , ',', class_, 'actual:', true_value)
+    else:
+        value = rf.predict(individual_val)
+        print('predicted:', np.round(value, 3), 'actual:', true_value)
