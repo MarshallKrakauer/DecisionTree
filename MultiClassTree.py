@@ -4,15 +4,8 @@ At some point, I may integrate this functionality into the ClassificationTree"""
 
 from sklearn.datasets import load_wine
 import pandas as pd
-import numpy as np
 import random
-from ClassificationTree import ClassificationTree
-
-data_bunch = load_wine()
-df = pd.DataFrame(data_bunch['data'], columns=data_bunch['feature_names'])
-df.rename(columns={'od280/od315_of_diluted_wines' : 'diluted'}, inplace=True)
-individual_value = df.iloc[0, :]
-df['y'] = data_bunch['target']
+from ClassificationTree import ClassificationTree, print_breadth_first
 
 
 class MultiClassTree(ClassificationTree):
@@ -25,6 +18,12 @@ class MultiClassTree(ClassificationTree):
 
     @property
     def probability(self):
+        """
+        Produce dictionary of potential probabilities for each class
+
+        :return: dict
+            Dictionary of probabilities for each class
+        """
         probability_dict = {}
         temp_df = self.df.sort_values(self.y_col, ascending=True)
 
@@ -104,8 +103,27 @@ class MultiClassTree(ClassificationTree):
             else:
                 return self.right_child.predict_proba(data_row)
 
+
+    def predict(self, data_row, cutoff = None):
+        outcome_dict = self.predict_proba(data_row)
+        max_value = float('-inf')
+        best_prediction = None
+
+        for key, value in outcome_dict.items():
+            if value > max_value:
+                max_value = value
+                best_prediction = key
+
+        return best_prediction
+
 if __name__ == '__main__':
-    mct = MultiClassTree(df, 'y', max_depth=3, random_seed=777)
+    data_bunch = load_wine()
+    df = pd.DataFrame(data_bunch['data'], columns=data_bunch['feature_names'])
+    df.rename(columns={'od280/od315_of_diluted_wines': 'diluted'}, inplace=True)
+    individual_value = df.iloc[10, :]
+    df['y'] = data_bunch['target']
+    mct = MultiClassTree(df, 'y', max_depth=3, random_seed=777, min_sample_split=10)
     mct.create_tree()
-    print(mct.predict_proba(individual_value))
+    print_breadth_first(mct)
+    print('probability_dict:', mct.predict_proba(individual_value), 'prediction:', mct.predict(individual_value))
 

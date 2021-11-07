@@ -34,8 +34,7 @@ class ClassificationTree(DecisionTree):
             return terminal_str + size_str + ' ' + depth_str + ' ' +  gini_str + ' ' + col_str +  split_str
         else:
             size_str = 'Size: ' + str(len(self.df))
-            prob_str = 'Prob: ' + str(round(self.probability,3))
-            return terminal_str + size_str + ' ' + depth_str + ' ' + prob_str
+            return terminal_str + size_str + ' ' + depth_str
 
     @property
     def probability(self):
