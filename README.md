@@ -7,7 +7,7 @@ This repository has a lot of files. I will explain them here:
 
 1. AbstractDecisionTree.py - File is not run directly. Creates the base functions that are inherited by the ClassificationTree and RegressionTree
 2. ClassificationTree.py - Decision tree for data with 0 or 1 target variable 
-3. MultiClassTree.py - Classification Tree for data with more than 2 classes. Currently not supported by Random Forest or Gradient Boosting
+3. MultiClassTree.py - Classification Tree for data with more than 2 classes. Supported by Random Forest, but not Gradient Boosting
 4. RegresionTree.py - Decision tree for data with continuous target variable
 5. RandomForest.py - Creates random set of either Classification or Regression Tree models.
 6. GBCTree.py - Inherits ClassificationTree.py. Creates custom classification tree for a gradient boosting tree algorithm
