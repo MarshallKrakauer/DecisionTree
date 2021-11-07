@@ -57,12 +57,32 @@ class DecisionTree:
         if self.bootstrap:
             self.df = self.df.sample(frac=1, replace=True,random_state=int(self.random_seed))
 
+        # Check to make sure dataframe has valid types
+        self.check_dataframe_dtypes()
+
         # Check to see if node is terminal
         if self.depth == self.max_depth:
             self.is_terminal = True
 
         if len(self.df) < self.min_sample_split:
             self.is_terminal = True
+
+    def check_dataframe_dtypes(self):
+        """"""
+        for col in self.df.columns:
+            data_type = self.df[col].dtype
+            if data_type == 'object':
+                self.encode_column(col)
+            if data_type not in ['int64', 'float64', 'object']:
+                raise ValueError('Columns must be integer, float, or object')
+
+    def encode_column(self, categorical_column):
+        value_dict = {}
+        unique_values = self.df[categorical_column].unique()
+        for idx, category in enumerate(unique_values):
+            value_dict[category] = idx
+
+        self.df[categorical_column] = self.df[categorical_column].apply(lambda x: value_dict[x])
 
     @abstractmethod
     def __str__(self):

@@ -4,7 +4,8 @@ import random
 from math import floor
 from sklearn.metrics import mean_squared_error
 from AbstractDecisionTree import print_breadth_first, DecisionTree, get_dataframe
-
+import pandas as pd
+import datetime as dt
 
 class RegressionTree(DecisionTree):
 
@@ -137,9 +138,11 @@ class RegressionTree(DecisionTree):
                                           random_seed=random.random())
 
 if __name__ == '__main__':
-    df, individual_val, true_value = get_dataframe(False)
+    _, individual_val, true_value = get_dataframe(False)
+    # Overwriting dataframe to get a testing categorical variable
+    df = pd.read_csv('testing_categorical.csv')
     dn = RegressionTree(df, 'y')
-    dn.create_tree()
-    print_breadth_first(dn)
-    pred_1 = dn.predict(individual_val)
-    print(pred_1, true_value)
+    # dn.create_tree()
+    # print_breadth_first(dn)
+    # pred_1 = dn.predict(individual_val)
+    # print(pred_1, true_value)
